@@ -35,7 +35,6 @@ dist/
 build/
 
 # Database files
-*.sql
 *.sqlite
 
 # IDE generated files
