@@ -1,1 +1,0 @@
-ALTER TABLE sys_company MODIFY COLUMN service_people VARCHAR(50) NOT NULL DEFAULT '';
