@@ -186,6 +186,7 @@ Route::group('/api/card-item', function () {
      * 套餐卡管理
      */
     Route::get('/get-package-cards', 'app\controller\CardItemController@getPackageCards');
+    Route::get('/get-package-card-detail/{id}', 'app\controller\CardItemController@getPackageCardDetail');
     Route::post('/add-package-card', 'app\controller\CardItemController@addPackageCard');
     Route::put('/update-package-card/{id}', 'app\controller\CardItemController@updatePackageCard');
     Route::delete('/delete-package-card/{id}', 'app\controller\CardItemController@deletePackageCard');
@@ -202,6 +203,17 @@ Route::group('/api/card-item', function () {
      * 产品管理
      */
     Route::get('/get-products', 'app\controller\CardItemController@getProducts');
+    Route::post('/add-product', 'app\controller\CardItemController@addProduct');
+    Route::put('/update-product/{id}', 'app\controller\CardItemController@updateProduct');
+    Route::delete('/delete-product/{id}', 'app\controller\CardItemController@deleteProduct');
+    
+    /**
+     * 产品分类管理
+     */
+    Route::get('/get-product-categories', 'app\controller\CardItemController@getProductCategories');
+    Route::post('/add-product-category', 'app\controller\CardItemController@addProductCategory');
+    Route::put('/update-product-category/{id}', 'app\controller\CardItemController@updateProductCategory');
+    Route::delete('/delete-product-category/{id}', 'app\controller\CardItemController@deleteProductCategory');
 })->middleware([JwtMiddleware::class, TenantMiddleware::class, CorsMiddleware::class]);
 
 /**

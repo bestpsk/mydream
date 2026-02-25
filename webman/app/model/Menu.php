@@ -22,7 +22,8 @@ class Menu extends Model
         'is_frame',
         'frame_src',
         'show_link',
-        'status'
+        'status',
+        'is_delete'
     ];
     
     public function roles()

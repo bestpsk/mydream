@@ -565,7 +565,17 @@ const handleStatusChange = async (row: any, newValue?: boolean) => {
         }
       }
     );
-    if (response.code !== 200) {
+    if (response.code === 200) {
+      ElMessage.success("状态更新成功");
+      // 清除路由缓存，确保下次获取最新菜单数据
+      import("@pureadmin/utils").then(({ storageLocal }) => {
+        storageLocal().removeItem("async-routes");
+        // 重新加载路由数据
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      });
+    } else {
       // 如果更新失败，恢复原来的状态
       row.status = !newValue;
       ElMessage.error("状态更新失败");

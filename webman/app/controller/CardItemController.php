@@ -873,8 +873,13 @@ class CardItemController
     {
         try {
             $data = $request->post();
+            if (empty($data)) {
+                $rawBody = $request->rawBody();
+                if ($rawBody) {
+                    $data = json_decode($rawBody, true);
+                }
+            }
             
-            // 验证必要参数
             if (empty($data['cardName'])) {
                 return json(['code' => 400, 'message' => '卡名称不能为空']);
             }
@@ -885,7 +890,6 @@ class CardItemController
                 return json(['code' => 400, 'message' => '销售价格不能为空']);
             }
             
-            // 获取当前用户所属公司ID
             $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
             
             // 转换字段名：camelCase 转 snake_case
@@ -918,8 +922,13 @@ class CardItemController
     {
         try {
             $data = $request->post();
+            if (empty($data)) {
+                $rawBody = $request->rawBody();
+                if ($rawBody) {
+                    $data = json_decode($rawBody, true);
+                }
+            }
             
-            // 检查充值卡是否存在
             $card = DB::table('card_recharge')->where('id', $id)->first();
             if (!$card) {
                 return json(['code' => 404, 'message' => '充值卡不存在']);
@@ -1003,6 +1012,7 @@ class CardItemController
                     'id' => $card->id,
                     'cardName' => $card->card_name,
                     'cardCode' => $card->card_code,
+                    'originalPrice' => $card->original_price,
                     'price' => $card->price,
                     'projectCount' => $card->project_count,
                     'description' => $card->description,
@@ -1041,39 +1051,53 @@ class CardItemController
     {
         try {
             $data = $request->post();
+            if (empty($data)) {
+                $rawBody = $request->rawBody();
+                if ($rawBody) {
+                    $data = json_decode($rawBody, true);
+                }
+            }
             
-            // 验证必要参数
+            $projectCount = isset($data['giftProjects']) ? count($data['giftProjects']) : ($data['projectCount'] ?? 0);
+            
             if (empty($data['cardName'])) {
+                \support\Log::warning('addPackageCard: cardName is empty');
                 return json(['code' => 400, 'message' => '卡名称不能为空']);
             }
             if (empty($data['price'])) {
+                \support\Log::warning('addPackageCard: price is empty');
                 return json(['code' => 400, 'message' => '价格不能为空']);
             }
-            if (empty($data['projectCount'])) {
-                return json(['code' => 400, 'message' => '包含项目数不能为空']);
-            }
             
-            // 获取当前用户所属公司ID
             $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
             
-            // 转换字段名：camelCase 转 snake_case
+            $formatDateTime = function($value) {
+                if (empty($value)) return null;
+                if (is_string($value)) {
+                    $timestamp = strtotime($value);
+                    return $timestamp ? date('Y-m-d H:i:s', $timestamp) : null;
+                }
+                return $value;
+            };
+            
             $dbData = [
                 'company_id' => $data['companyId'] ?? $currentCompanyId,
                 'card_name' => $data['cardName'] ?? '',
                 'card_code' => $data['cardCode'] ?? '',
+                'original_price' => $data['originalPrice'] ?? 0,
                 'price' => $data['price'] ?? 0,
-                'project_count' => $data['projectCount'] ?? 0,
+                'project_count' => $projectCount,
                 'description' => $data['description'] ?? '',
                 'remark' => $data['remark'] ?? '',
                 'is_modifiable' => $data['isModifiable'] ?? 0,
-                'is_add_new_item_forbidden' => $data['isAddNewItemForbidden'] ?? 0,
+                'is_add_new_item_forbidden' => $data['isAddItemDisabled'] ?? 0,
                 'is_limit_once' => $data['isLimitOnce'] ?? 0,
                 'is_expire_invalid' => $data['isExpireInvalid'] ?? 0,
-                'is_gift_forbidden' => $data['isGiftForbidden'] ?? 0,
-                'online_time' => $data['onlineTime'] ?? null,
-                'offline_time' => $data['offlineTime'] ?? null,
+                'is_gift_forbidden' => $data['isProhibitGift'] ?? 0,
+                'online_time' => $formatDateTime($data['onlineTime'] ?? null),
+                'offline_time' => $formatDateTime($data['offlineTime'] ?? null),
                 'expire_type' => $data['expireType'] ?? 1,
-                'expire_date' => $data['expireDate'] ?? null,
+                'expire_date' => $formatDateTime($data['expireDate'] ?? null),
                 'expire_months' => $data['expireMonths'] ?? 12,
                 'sale_store_ids' => isset($data['saleStoreIds']) ? json_encode($data['saleStoreIds']) : null,
                 'consume_store_ids' => isset($data['consumeStoreIds']) ? json_encode($data['consumeStoreIds']) : null,
@@ -1085,10 +1109,49 @@ class CardItemController
             ];
             
             $id = DB::table('card_package')->insertGetId($dbData);
+            
+            if (!empty($data['giftProjects'])) {
+                foreach ($data['giftProjects'] as $project) {
+                    $projectData = [
+                        'company_id' => $currentCompanyId,
+                        'package_id' => $id,
+                        'project_id' => $project['projectId'] ?? 0,
+                        'times' => $project['times'] ?? 1,
+                        'unit_price' => $project['unitPrice'] ?? 0,
+                        'total_price' => $project['totalPrice'] ?? 0,
+                        'consume' => $project['consume'] ?? 0,
+                        'manual_salary' => $project['manualSalary'] ?? 0,
+                        'isDelete' => 0,
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at' => date('Y-m-d H:i:s')
+                    ];
+                    DB::table('card_package_gift_project')->insert($projectData);
+                }
+            }
+            
+            if (!empty($data['giftProducts'])) {
+                foreach ($data['giftProducts'] as $product) {
+                    $productData = [
+                        'company_id' => $currentCompanyId,
+                        'package_id' => $id,
+                        'product_id' => $product['productId'] ?? 0,
+                        'times' => $product['times'] ?? 1,
+                        'unit_price' => $product['unitPrice'] ?? 0,
+                        'total_price' => $product['totalPrice'] ?? 0,
+                        'consume' => $product['consume'] ?? 0,
+                        'manual_salary' => $product['manualSalary'] ?? 0,
+                        'isDelete' => 0,
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at' => date('Y-m-d H:i:s')
+                    ];
+                    DB::table('card_package_gift_product')->insert($productData);
+                }
+            }
+            
             return json(['code' => 200, 'message' => '添加套餐卡成功', 'data' => ['id' => $id, ...$dbData]]);
         } catch (\Exception $e) {
-            // 记录错误日志
-            error_log('Add package card error: ' . $e->getMessage());
+            \support\Log::error('Add package card error: ' . $e->getMessage());
+            \support\Log::error('Add package card trace: ' . $e->getTraceAsString());
             return json(['code' => 500, 'message' => '添加套餐卡失败，请稍后重试']);
         }
     }
@@ -1103,38 +1166,57 @@ class CardItemController
     {
         try {
             $data = $request->post();
+            \support\Log::info('updatePackageCard POST data: ' . json_encode($data));
+            if (empty($data)) {
+                $rawBody = $request->rawBody();
+                \support\Log::info('updatePackageCard Raw body: ' . $rawBody);
+                if ($rawBody) {
+                    $data = json_decode($rawBody, true);
+                    \support\Log::info('updatePackageCard Decoded: ' . json_encode($data));
+                }
+            }
             
-            // 检查用户权限
             $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
             $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
             
-            // 检查套餐卡是否存在，并且确保只能修改自己公司的套餐卡
             $query = DB::table('card_package')->where('id', $id)->where('isDelete', 0);
             if (!$isSuper && $currentCompanyId) {
                 $query->where('company_id', $currentCompanyId);
             }
             $card = $query->first();
             if (!$card) {
+                \support\Log::warning('updatePackageCard: card not found, id=' . $id);
                 return json(['code' => 404, 'message' => '套餐卡不存在']);
             }
             
-            // 转换字段名：camelCase 转 snake_case
+            $projectCount = isset($data['giftProjects']) ? count($data['giftProjects']) : ($data['projectCount'] ?? $card->project_count);
+            
+            $formatDateTime = function($value, $default = null) {
+                if (empty($value)) return $default;
+                if (is_string($value)) {
+                    $timestamp = strtotime($value);
+                    return $timestamp ? date('Y-m-d H:i:s', $timestamp) : $default;
+                }
+                return $value;
+            };
+            
             $dbData = [
                 'card_name' => $data['cardName'] ?? $card->card_name,
                 'card_code' => $data['cardCode'] ?? $card->card_code,
+                'original_price' => $data['originalPrice'] ?? $card->original_price,
                 'price' => $data['price'] ?? $card->price,
-                'project_count' => $data['projectCount'] ?? $card->project_count,
+                'project_count' => $projectCount,
                 'description' => $data['description'] ?? $card->description,
                 'remark' => $data['remark'] ?? $card->remark,
                 'is_modifiable' => $data['isModifiable'] ?? $card->is_modifiable,
-                'is_add_new_item_forbidden' => $data['isAddNewItemForbidden'] ?? $card->is_add_new_item_forbidden,
+                'is_add_new_item_forbidden' => $data['isAddItemDisabled'] ?? $card->is_add_new_item_forbidden,
                 'is_limit_once' => $data['isLimitOnce'] ?? $card->is_limit_once,
                 'is_expire_invalid' => $data['isExpireInvalid'] ?? $card->is_expire_invalid,
-                'is_gift_forbidden' => $data['isGiftForbidden'] ?? $card->is_gift_forbidden,
-                'online_time' => $data['onlineTime'] ?? $card->online_time,
-                'offline_time' => $data['offlineTime'] ?? $card->offline_time,
+                'is_gift_forbidden' => $data['isProhibitGift'] ?? $card->is_gift_forbidden,
+                'online_time' => $formatDateTime($data['onlineTime'] ?? null, $card->online_time),
+                'offline_time' => $formatDateTime($data['offlineTime'] ?? null, $card->offline_time),
                 'expire_type' => $data['expireType'] ?? $card->expire_type,
-                'expire_date' => $data['expireDate'] ?? $card->expire_date,
+                'expire_date' => $formatDateTime($data['expireDate'] ?? null, $card->expire_date),
                 'expire_months' => $data['expireMonths'] ?? $card->expire_months,
                 'sale_store_ids' => isset($data['saleStoreIds']) ? json_encode($data['saleStoreIds']) : $card->sale_store_ids,
                 'consume_store_ids' => isset($data['consumeStoreIds']) ? json_encode($data['consumeStoreIds']) : $card->consume_store_ids,
@@ -1144,6 +1226,81 @@ class CardItemController
             ];
             
             DB::table('card_package')->where('id', $id)->update($dbData);
+            
+            if (!empty($data['giftProjects'])) {
+                DB::table('card_package_gift_project')
+                    ->where('package_id', $id)
+                    ->update(['isDelete' => 1, 'updated_at' => date('Y-m-d H:i:s')]);
+                    
+                foreach ($data['giftProjects'] as $project) {
+                    if (!empty($project['id'])) {
+                        DB::table('card_package_gift_project')
+                            ->where('id', $project['id'])
+                            ->update([
+                                'project_id' => $project['projectId'] ?? 0,
+                                'times' => $project['times'] ?? 1,
+                                'unit_price' => $project['unitPrice'] ?? 0,
+                                'total_price' => $project['totalPrice'] ?? 0,
+                                'consume' => $project['consume'] ?? 0,
+                                'manual_salary' => $project['manualSalary'] ?? 0,
+                                'isDelete' => 0,
+                                'updated_at' => date('Y-m-d H:i:s')
+                            ]);
+                    } else {
+                        DB::table('card_package_gift_project')->insert([
+                            'company_id' => $currentCompanyId,
+                            'package_id' => $id,
+                            'project_id' => $project['projectId'] ?? 0,
+                            'times' => $project['times'] ?? 1,
+                            'unit_price' => $project['unitPrice'] ?? 0,
+                            'total_price' => $project['totalPrice'] ?? 0,
+                            'consume' => $project['consume'] ?? 0,
+                            'manual_salary' => $project['manualSalary'] ?? 0,
+                            'isDelete' => 0,
+                            'created_at' => date('Y-m-d H:i:s'),
+                            'updated_at' => date('Y-m-d H:i:s')
+                        ]);
+                    }
+                }
+            }
+            
+            if (!empty($data['giftProducts'])) {
+                DB::table('card_package_gift_product')
+                    ->where('package_id', $id)
+                    ->update(['isDelete' => 1, 'updated_at' => date('Y-m-d H:i:s')]);
+                    
+                foreach ($data['giftProducts'] as $product) {
+                    if (!empty($product['id'])) {
+                        DB::table('card_package_gift_product')
+                            ->where('id', $product['id'])
+                            ->update([
+                                'product_id' => $product['productId'] ?? 0,
+                                'times' => $product['times'] ?? 1,
+                                'unit_price' => $product['unitPrice'] ?? 0,
+                                'total_price' => $product['totalPrice'] ?? 0,
+                                'consume' => $product['consume'] ?? 0,
+                                'manual_salary' => $product['manualSalary'] ?? 0,
+                                'isDelete' => 0,
+                                'updated_at' => date('Y-m-d H:i:s')
+                            ]);
+                    } else {
+                        DB::table('card_package_gift_product')->insert([
+                            'company_id' => $currentCompanyId,
+                            'package_id' => $id,
+                            'product_id' => $product['productId'] ?? 0,
+                            'times' => $product['times'] ?? 1,
+                            'unit_price' => $product['unitPrice'] ?? 0,
+                            'total_price' => $product['totalPrice'] ?? 0,
+                            'consume' => $product['consume'] ?? 0,
+                            'manual_salary' => $product['manualSalary'] ?? 0,
+                            'isDelete' => 0,
+                            'created_at' => date('Y-m-d H:i:s'),
+                            'updated_at' => date('Y-m-d H:i:s')
+                        ]);
+                    }
+                }
+            }
+            
             return json(['code' => 200, 'message' => '更新套餐卡成功', 'data' => ['id' => $id, ...$dbData]]);
         } catch (\Exception $e) {
             // 记录错误日志
@@ -1217,6 +1374,7 @@ class CardItemController
                 'id' => $card->id,
                 'cardName' => $card->card_name,
                 'cardCode' => $card->card_code,
+                'originalPrice' => $card->original_price,
                 'price' => $card->price,
                 'projectCount' => $card->project_count,
                 'description' => $card->description,
@@ -1238,10 +1396,65 @@ class CardItemController
                 'createTime' => $card->created_at
             ];
             
+            $giftProjects = DB::table('card_package_gift_project')
+                ->where('package_id', $id)
+                ->where('isDelete', 0)
+                ->get();
+            
+            $giftProjectsList = [];
+            foreach ($giftProjects as $project) {
+                $projectName = '';
+                if ($project->project_id) {
+                    $projectInfo = DB::table('card_project')->where('id', $project->project_id)->first();
+                    if ($projectInfo) {
+                        $projectName = $projectInfo->project_name ?? '';
+                    }
+                }
+                $giftProjectsList[] = [
+                    'id' => $project->id,
+                    'projectId' => $project->project_id,
+                    'projectName' => $projectName,
+                    'times' => $project->times,
+                    'unitPrice' => $project->unit_price,
+                    'totalPrice' => $project->total_price,
+                    'consume' => $project->consume,
+                    'manualSalary' => $project->manual_salary
+                ];
+            }
+            
+            $giftProducts = DB::table('card_package_gift_product')
+                ->where('package_id', $id)
+                ->where('isDelete', 0)
+                ->get();
+            
+            $giftProductsList = [];
+            foreach ($giftProducts as $product) {
+                $productName = '';
+                if ($product->product_id) {
+                    $productInfo = DB::table('card_product')->where('id', $product->product_id)->first();
+                    if ($productInfo) {
+                        $productName = $productInfo->product_name ?? '';
+                    }
+                }
+                $giftProductsList[] = [
+                    'id' => $product->id,
+                    'productId' => $product->product_id,
+                    'productName' => $productName,
+                    'times' => $product->times,
+                    'unitPrice' => $product->unit_price,
+                    'totalPrice' => $product->total_price,
+                    'consume' => $product->consume,
+                    'manualSalary' => $product->manual_salary
+                ];
+            }
+            
+            $formattedCard['giftProjects'] = $giftProjectsList;
+            $formattedCard['giftProducts'] = $giftProductsList;
+            
             return json(['code' => 200, 'message' => '获取套餐卡详情成功', 'data' => $formattedCard]);
         } catch (\Exception $e) {
-            // 记录错误日志
-            error_log('Get package card detail error: ' . $e->getMessage());
+            \support\Log::error('Get package card detail error: ' . $e->getMessage());
+            \support\Log::error('Get package card detail trace: ' . $e->getTraceAsString());
             return json(['code' => 500, 'message' => '获取套餐卡详情失败，请稍后重试']);
         }
     }
@@ -1374,8 +1587,13 @@ class CardItemController
     {
         try {
             $data = $request->post();
+            if (empty($data)) {
+                $rawBody = $request->rawBody();
+                if ($rawBody) {
+                    $data = json_decode($rawBody, true);
+                }
+            }
             
-            // 验证必要参数
             if (empty($data['packageId'])) {
                 return json(['code' => 400, 'message' => '套餐卡ID不能为空']);
             }
@@ -1395,7 +1613,6 @@ class CardItemController
                 return json(['code' => 400, 'message' => '手工不能为空']);
             }
             
-            // 检查用户权限
             $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
             $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
             
@@ -1446,8 +1663,13 @@ class CardItemController
     {
         try {
             $data = $request->post();
+            if (empty($data)) {
+                $rawBody = $request->rawBody();
+                if ($rawBody) {
+                    $data = json_decode($rawBody, true);
+                }
+            }
             
-            // 检查用户权限
             $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
             $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
             
@@ -1545,8 +1767,13 @@ class CardItemController
     {
         try {
             $data = $request->post();
+            if (empty($data)) {
+                $rawBody = $request->rawBody();
+                if ($rawBody) {
+                    $data = json_decode($rawBody, true);
+                }
+            }
             
-            // 验证必要参数
             if (empty($data['packageId'])) {
                 return json(['code' => 400, 'message' => '套餐卡ID不能为空']);
             }
@@ -1563,7 +1790,6 @@ class CardItemController
                 return json(['code' => 400, 'message' => '手工不能为空']);
             }
             
-            // 检查用户权限
             $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
             $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
             
@@ -1613,8 +1839,13 @@ class CardItemController
     {
         try {
             $data = $request->post();
+            if (empty($data)) {
+                $rawBody = $request->rawBody();
+                if ($rawBody) {
+                    $data = json_decode($rawBody, true);
+                }
+            }
             
-            // 检查用户权限
             $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
             $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
             
@@ -1759,8 +1990,13 @@ class CardItemController
     {
         try {
             $data = $request->post();
+            if (empty($data)) {
+                $rawBody = $request->rawBody();
+                if ($rawBody) {
+                    $data = json_decode($rawBody, true);
+                }
+            }
             
-            // 验证必要参数
             if (empty($data['cardName'])) {
                 return json(['code' => 400, 'message' => '卡名称不能为空']);
             }
@@ -1771,7 +2007,6 @@ class CardItemController
                 return json(['code' => 400, 'message' => '价格不能为空']);
             }
             
-            // 获取当前用户所属公司ID
             $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
             
             // 转换字段名：camelCase 转 snake_case
@@ -1804,8 +2039,13 @@ class CardItemController
     {
         try {
             $data = $request->post();
+            if (empty($data)) {
+                $rawBody = $request->rawBody();
+                if ($rawBody) {
+                    $data = json_decode($rawBody, true);
+                }
+            }
             
-            // 检查时效卡是否存在
             $card = DB::table('card_time')->where('id', $id)->first();
             if (!$card) {
                 return json(['code' => 404, 'message' => '时效卡不存在']);
@@ -1899,41 +2139,371 @@ class CardItemController
     public function getProducts(Request $request)
     {
         try {
-            // 检查用户权限
             $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
             $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
             
-            // 构建查询
             $query = DB::table('card_product')->where('isDelete', 0);
             
-            // 非超级管理员只能查看自己公司的产品
             if (!$isSuper && $currentCompanyId) {
                 $query->where('company_id', $currentCompanyId);
             }
             
-            // 应用搜索条件
             $productName = $request->get('productName');
             if ($productName) {
                 $query->where('product_name', 'like', '%' . $productName . '%');
             }
             
-            // 执行查询
+            $categoryId = $request->get('categoryId');
+            if ($categoryId) {
+                $query->where('category_id', $categoryId);
+            }
+            
             $products = $query->get();
             
-            // 转换字段名：数据库字段名 转 camelCase
             $formattedProducts = $products->map(function($product) {
                 return [
                     'id' => $product->id,
                     'productName' => $product->product_name,
-                    'price' => $product->price,
+                    'productCode' => $product->product_code ?? '',
+                    'externalName' => $product->external_name ?? '',
+                    'barcode' => $product->barcode ?? '',
+                    'categoryId' => $product->category_id,
+                    'supplierId' => $product->supplier_id,
+                    'productType' => $product->product_type ?? '',
+                    'unit' => $product->unit ?? '',
+                    'monthlyLimit' => $product->monthly_limit ?? 0,
+                    'consumptionInterval' => $product->consumption_interval ?? 0,
+                    'specification' => $product->specification ?? '',
+                    'originalPrice' => $product->original_price ?? 0,
+                    'salePrice' => $product->sale_price ?? 0,
+                    'experiencePrice' => $product->experience_price ?? 0,
+                    'purchasePrice' => $product->purchase_price ?? 0,
+                    'onlineDate' => $product->online_date,
+                    'offlineDate' => $product->offline_date,
+                    'stockMin' => $product->stock_min ?? 0,
+                    'stockMax' => $product->stock_max ?? 0,
+                    'approvalNumber' => $product->approval_number ?? '',
+                    'expiryDate' => $product->expiry_date,
+                    'status' => $product->status ?? 1,
+                    'remark' => $product->remark ?? '',
+                    'limitedSaleStores' => $product->limited_sale_stores ? json_decode($product->limited_sale_stores, true) : [],
+                    'limitedConsumeStores' => $product->limited_consume_stores ? json_decode($product->limited_consume_stores, true) : [],
+                    'limitedSaleDepts' => $product->limited_sale_depts ? json_decode($product->limited_sale_depts, true) : [],
+                    'limitedConsumeDepts' => $product->limited_consume_depts ? json_decode($product->limited_consume_depts, true) : [],
+                    'noDiscount' => $product->no_discount ?? 0,
+                    'allowGift' => $product->allow_gift ?? 0,
+                    'noConsumption' => $product->no_consumption ?? 0,
+                    'isCooperative' => $product->is_cooperative ?? 0,
+                    'isYm' => $product->is_ym ?? 0,
+                    'isSpecial' => $product->is_special ?? 0,
                     'createTime' => $product->created_at
                 ];
             });
             return json(['code' => 200, 'message' => '获取产品列表成功', 'data' => $formattedProducts]);
         } catch (\Exception $e) {
-            // 记录错误日志
             error_log('Get products error: ' . $e->getMessage());
             return json(['code' => 500, 'message' => '获取产品列表失败，请稍后重试']);
+        }
+    }
+    
+    /**
+     * 新增产品
+     * @param Request $request 请求对象
+     * @return array 添加结果
+     */
+    public function addProduct(Request $request)
+    {
+        try {
+            $data = $request->post();
+            
+            if (empty($data['productName'])) {
+                return json(['code' => 400, 'message' => '产品名称不能为空']);
+            }
+            
+            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
+            
+            $dbData = [
+                'company_id' => $data['companyId'] ?? $currentCompanyId,
+                'product_name' => $data['productName'] ?? '',
+                'product_code' => $data['productCode'] ?? '',
+                'external_name' => $data['externalName'] ?? '',
+                'barcode' => $data['barcode'] ?? '',
+                'category_id' => $data['categoryId'] ?? null,
+                'supplier_id' => $data['supplierId'] ?? null,
+                'product_type' => $data['productType'] ?? '',
+                'unit' => $data['unit'] ?? '',
+                'monthly_limit' => $data['monthlyLimit'] ?? 0,
+                'consumption_interval' => $data['consumptionInterval'] ?? 0,
+                'specification' => $data['specification'] ?? '',
+                'original_price' => $data['originalPrice'] ?? 0,
+                'sale_price' => $data['salePrice'] ?? 0,
+                'experience_price' => $data['experiencePrice'] ?? 0,
+                'purchase_price' => $data['purchasePrice'] ?? 0,
+                'online_date' => $data['onlineDate'] ?? null,
+                'offline_date' => $data['offlineDate'] ?? null,
+                'stock_min' => $data['stockMin'] ?? 0,
+                'stock_max' => $data['stockMax'] ?? 0,
+                'approval_number' => $data['approvalNumber'] ?? '',
+                'expiry_date' => $data['expiryDate'] ?? null,
+                'status' => $data['status'] ?? 1,
+                'remark' => $data['remark'] ?? '',
+                'limited_sale_stores' => isset($data['limitedSaleStores']) ? json_encode($data['limitedSaleStores']) : null,
+                'limited_consume_stores' => isset($data['limitedConsumeStores']) ? json_encode($data['limitedConsumeStores']) : null,
+                'limited_sale_depts' => isset($data['limitedSaleDepts']) ? json_encode($data['limitedSaleDepts']) : null,
+                'limited_consume_depts' => isset($data['limitedConsumeDepts']) ? json_encode($data['limitedConsumeDepts']) : null,
+                'no_discount' => $data['noDiscount'] ?? 0,
+                'allow_gift' => $data['allowGift'] ?? 0,
+                'no_consumption' => $data['noConsumption'] ?? 0,
+                'is_cooperative' => $data['isCooperative'] ?? 0,
+                'is_ym' => $data['isYm'] ?? 0,
+                'is_special' => $data['isSpecial'] ?? 0,
+                'isDelete' => 0,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+            
+            $id = DB::table('card_product')->insertGetId($dbData);
+            
+            return json(['code' => 200, 'message' => '新增产品成功', 'data' => ['id' => $id]]);
+        } catch (\Exception $e) {
+            error_log('Add product error: ' . $e->getMessage());
+            return json(['code' => 500, 'message' => '新增产品失败，请稍后重试']);
+        }
+    }
+    
+    /**
+     * 更新产品
+     * @param Request $request 请求对象
+     * @param int $id 产品ID
+     * @return array 更新结果
+     */
+    public function updateProduct(Request $request, $id)
+    {
+        try {
+            $data = $request->post();
+            
+            if (empty($data['productName'])) {
+                return json(['code' => 400, 'message' => '产品名称不能为空']);
+            }
+            
+            $product = DB::table('card_product')->where('id', $id)->first();
+            if (!$product) {
+                return json(['code' => 404, 'message' => '产品不存在']);
+            }
+            
+            $dbData = [
+                'product_name' => $data['productName'] ?? '',
+                'product_code' => $data['productCode'] ?? '',
+                'external_name' => $data['externalName'] ?? '',
+                'barcode' => $data['barcode'] ?? '',
+                'category_id' => $data['categoryId'] ?? null,
+                'supplier_id' => $data['supplierId'] ?? null,
+                'product_type' => $data['productType'] ?? '',
+                'unit' => $data['unit'] ?? '',
+                'monthly_limit' => $data['monthlyLimit'] ?? 0,
+                'consumption_interval' => $data['consumptionInterval'] ?? 0,
+                'specification' => $data['specification'] ?? '',
+                'original_price' => $data['originalPrice'] ?? 0,
+                'sale_price' => $data['salePrice'] ?? 0,
+                'experience_price' => $data['experiencePrice'] ?? 0,
+                'purchase_price' => $data['purchasePrice'] ?? 0,
+                'online_date' => $data['onlineDate'] ?? null,
+                'offline_date' => $data['offlineDate'] ?? null,
+                'stock_min' => $data['stockMin'] ?? 0,
+                'stock_max' => $data['stockMax'] ?? 0,
+                'approval_number' => $data['approvalNumber'] ?? '',
+                'expiry_date' => $data['expiryDate'] ?? null,
+                'status' => $data['status'] ?? 1,
+                'remark' => $data['remark'] ?? '',
+                'limited_sale_stores' => isset($data['limitedSaleStores']) ? json_encode($data['limitedSaleStores']) : null,
+                'limited_consume_stores' => isset($data['limitedConsumeStores']) ? json_encode($data['limitedConsumeStores']) : null,
+                'limited_sale_depts' => isset($data['limitedSaleDepts']) ? json_encode($data['limitedSaleDepts']) : null,
+                'limited_consume_depts' => isset($data['limitedConsumeDepts']) ? json_encode($data['limitedConsumeDepts']) : null,
+                'no_discount' => $data['noDiscount'] ?? 0,
+                'allow_gift' => $data['allowGift'] ?? 0,
+                'no_consumption' => $data['noConsumption'] ?? 0,
+                'is_cooperative' => $data['isCooperative'] ?? 0,
+                'is_ym' => $data['isYm'] ?? 0,
+                'is_special' => $data['isSpecial'] ?? 0,
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+            
+            DB::table('card_product')->where('id', $id)->update($dbData);
+            
+            return json(['code' => 200, 'message' => '更新产品成功']);
+        } catch (\Exception $e) {
+            error_log('Update product error: ' . $e->getMessage());
+            return json(['code' => 500, 'message' => '更新产品失败，请稍后重试']);
+        }
+    }
+    
+    /**
+     * 删除产品
+     * @param Request $request 请求对象
+     * @param int $id 产品ID
+     * @return array 删除结果
+     */
+    public function deleteProduct(Request $request, $id)
+    {
+        try {
+            $product = DB::table('card_product')->where('id', $id)->first();
+            if (!$product) {
+                return json(['code' => 404, 'message' => '产品不存在']);
+            }
+            
+            DB::table('card_product')->where('id', $id)->update(['isDelete' => 1]);
+            
+            return json(['code' => 200, 'message' => '删除产品成功']);
+        } catch (\Exception $e) {
+            error_log('Delete product error: ' . $e->getMessage());
+            return json(['code' => 500, 'message' => '删除产品失败，请稍后重试']);
+        }
+    }
+    
+    /**
+     * 获取产品分类列表
+     * @param Request $request 请求对象
+     * @return array 分类列表数据
+     */
+    public function getProductCategories(Request $request)
+    {
+        try {
+            $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
+            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
+            
+            $query = DB::table('card_product_category')->where('isDelete', 0);
+            
+            if (!$isSuper && $currentCompanyId) {
+                $query->where('company_id', $currentCompanyId);
+            }
+            
+            $departmentId = $request->get('departmentId');
+            if ($departmentId) {
+                $query->where('department_id', $departmentId);
+            }
+            
+            $categoryName = $request->get('categoryName');
+            if ($categoryName) {
+                $query->where('category_name', 'like', '%' . $categoryName . '%');
+            }
+            
+            $categories = $query->orderBy('sort', 'asc')->get();
+            
+            $departments = DB::table('sys_department')->where('isDelete', 0)->get();
+            $deptMap = [];
+            foreach ($departments as $dept) {
+                $deptMap[$dept->id] = $dept->dept_name;
+            }
+            
+            $formattedCategories = $categories->map(function($category) use ($deptMap) {
+                return [
+                    'id' => $category->id,
+                    'categoryName' => $category->category_name,
+                    'departmentId' => $category->department_id,
+                    'departmentName' => isset($deptMap[$category->department_id]) ? $deptMap[$category->department_id] : '',
+                    'sort' => $category->sort,
+                    'createTime' => $category->created_at
+                ];
+            });
+            
+            return json(['code' => 200, 'message' => '获取产品分类列表成功', 'data' => $formattedCategories]);
+        } catch (\Exception $e) {
+            error_log('Get product categories error: ' . $e->getMessage());
+            return json(['code' => 500, 'message' => '获取产品分类列表失败，请稍后重试']);
+        }
+    }
+    
+    /**
+     * 新增产品分类
+     * @param Request $request 请求对象
+     * @return array 添加结果
+     */
+    public function addProductCategory(Request $request)
+    {
+        try {
+            $data = $request->post();
+            
+            if (empty($data['categoryName'])) {
+                return json(['code' => 400, 'message' => '分类名称不能为空']);
+            }
+            
+            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
+            
+            $dbData = [
+                'category_name' => $data['categoryName'] ?? '',
+                'department_id' => $data['departmentId'] ?? null,
+                'sort' => $data['sort'] ?? 0,
+                'company_id' => $data['companyId'] ?? $currentCompanyId,
+                'isDelete' => 0,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+            
+            $id = DB::table('card_product_category')->insertGetId($dbData);
+            
+            return json(['code' => 200, 'message' => '新增产品分类成功', 'data' => ['id' => $id]]);
+        } catch (\Exception $e) {
+            error_log('Add product category error: ' . $e->getMessage());
+            return json(['code' => 500, 'message' => '新增产品分类失败，请稍后重试']);
+        }
+    }
+    
+    /**
+     * 更新产品分类
+     * @param Request $request 请求对象
+     * @param int $id 分类ID
+     * @return array 更新结果
+     */
+    public function updateProductCategory(Request $request, $id)
+    {
+        try {
+            $data = $request->post();
+            
+            if (empty($data['categoryName'])) {
+                return json(['code' => 400, 'message' => '分类名称不能为空']);
+            }
+            
+            $category = DB::table('card_product_category')->where('id', $id)->first();
+            if (!$category) {
+                return json(['code' => 404, 'message' => '分类不存在']);
+            }
+            
+            $dbData = [
+                'category_name' => $data['categoryName'] ?? '',
+                'department_id' => $data['departmentId'] ?? null,
+                'sort' => $data['sort'] ?? 0,
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+            
+            DB::table('card_product_category')->where('id', $id)->update($dbData);
+            
+            return json(['code' => 200, 'message' => '更新产品分类成功']);
+        } catch (\Exception $e) {
+            error_log('Update product category error: ' . $e->getMessage());
+            return json(['code' => 500, 'message' => '更新产品分类失败，请稍后重试']);
+        }
+    }
+    
+    /**
+     * 删除产品分类
+     * @param Request $request 请求对象
+     * @param int $id 分类ID
+     * @return array 删除结果
+     */
+    public function deleteProductCategory(Request $request, $id)
+    {
+        try {
+            $category = DB::table('card_product_category')->where('id', $id)->first();
+            if (!$category) {
+                return json(['code' => 404, 'message' => '分类不存在']);
+            }
+            
+            DB::table('card_product_category')->where('id', $id)->update(['isDelete' => 1]);
+            
+            return json(['code' => 200, 'message' => '删除产品分类成功']);
+        } catch (\Exception $e) {
+            error_log('Delete product category error: ' . $e->getMessage());
+            return json(['code' => 500, 'message' => '删除产品分类失败，请稍后重试']);
         }
     }
 }

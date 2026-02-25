@@ -13,15 +13,12 @@ class PermissionController
 {
     public function getRoutes(Request $request)
     {
-        // 设置编码
         header('Content-Type: application/json; charset=utf-8');
-        // 添加CORS头
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
         header('Access-Control-Allow-Headers: Origin, Content-Type, Accept, Authorization, X-Requested-With');
         header('Access-Control-Max-Age: 86400');
         
-        // 处理预检请求
         if ($request->method() === 'OPTIONS') {
             http_response_code(204);
             exit;
@@ -34,18 +31,16 @@ class PermissionController
             return json(['code' => 404, 'message' => '用户不存在']);
         }
         
-        // 获取用户拥有的菜单ID
         $menuIds = $user->roles->flatMap(function ($role) {
             return $role->menus->pluck('id')->toArray();
         })->unique()->toArray();
         
-        // 获取菜单列表
-        $menus = Menu::whereIn('id', $menuIds)->where('status', 1)->get();
+        $menus = Menu::whereIn('id', $menuIds)->where('status', 1)->where('is_delete', 0)->get();
         
-        // 构建菜单树
+        $menus = $this->filterMenusWithDisabledParent($menus);
+        
         $menuTree = $this->buildMenuTree($menus);
         
-        // 转换为前端路由格式
         $routes = $this->convertToRoutes($menuTree);
         
         return json([
@@ -303,6 +298,7 @@ class PermissionController
     private function buildMenuTree($menus, $parentId = 0)
     {
         $tree = [];
+        $menuIds = $menus->pluck('id')->toArray();
         
         foreach ($menus as $menu) {
             if ($menu->parent_id == $parentId) {
@@ -315,6 +311,41 @@ class PermissionController
         }
         
         return $tree;
+    }
+    
+    /**
+     * 过滤掉父菜单被禁用的子菜单
+     * 递归检查每个菜单的父级链，确保所有父级都是启用状态
+     */
+    private function filterMenusWithDisabledParent($menus)
+    {
+        $validMenuIds = [];
+        $menusById = [];
+        
+        foreach ($menus as $menu) {
+            $menusById[$menu->id] = $menu;
+        }
+        
+        foreach ($menus as $menu) {
+            $parentId = $menu->parent_id;
+            $allParentsEnabled = true;
+            
+            while ($parentId > 0) {
+                if (!isset($menusById[$parentId])) {
+                    $allParentsEnabled = false;
+                    break;
+                }
+                $parentId = $menusById[$parentId]->parent_id;
+            }
+            
+            if ($allParentsEnabled) {
+                $validMenuIds[] = $menu->id;
+            }
+        }
+        
+        return $menus->filter(function ($menu) use ($validMenuIds) {
+            return in_array($menu->id, $validMenuIds);
+        });
     }
     
     private function convertToRoutes($menuTree)

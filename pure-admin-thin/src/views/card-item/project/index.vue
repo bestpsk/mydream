@@ -1,15 +1,42 @@
+<!--
+  品项管理页面
+  
+  功能说明：
+  1. 品项管理 - 管理服务项目信息，包括项目名称、分类、价格、供应商、部位类型等
+  2. 项目分类 - 管理项目分类，按部门划分，支持树形结构
+  
+  页面结构：
+  - 品项管理标签页：项目列表、搜索、新增/编辑/删除项目
+  - 项目分类标签页：分类列表、搜索、新增/编辑/删除分类
+  
+  权限控制：
+  - project:project:view - 查看项目
+  - project:project:add - 新增项目
+  - project:project:edit - 编辑项目
+  - project:project:delete - 删除项目
+  - project:category:view - 查看分类
+  - project:category:add - 新增分类
+  - project:category:edit - 编辑分类
+  - project:category:delete - 删除分类
+  
+  数据表：
+  - card_project - 项目表
+  - card_project_category - 项目分类表
+  - card_project_ingredient - 项目配料表
+  - card_project_sub_project - 子项目表
+-->
 <template>
   <div class="project-container">
     <el-card class="h-full flex flex-col">
-      <!-- 标签页 -->
+      <!-- 标签页切换 -->
       <el-tabs v-model="activeTab" @tab-click="handleTabClick">
-        <!-- 项目管理 -->
+        <!-- 品项管理标签页 -->
         <el-tab-pane label="品项管理" name="project">
           <div class="tab-content flex flex-col h-full">
             <div v-if="hasAuth('project:project:view')">
-              <!-- 新增按钮和搜索栏放在同一行 -->
+              <!-- 搜索栏和操作按钮区域 -->
               <div class="mb-4 flex justify-between items-center">
-                <!-- 搜索栏 -->
+                <!-- 项目搜索表单 -->
                 <div class="search-bar flex-grow">
                   <el-form
                     :inline="true"
@@ -43,7 +70,7 @@
                     </el-form-item>
                   </el-form>
                 </div>
-                <!-- 新增按钮 -->
+                <!-- 新增项目按钮 -->
                 <el-button
                   v-if="hasAuth('project:project:add')"
                   type="primary"
@@ -55,7 +82,7 @@
                 </el-button>
               </div>
 
-              <!-- 项目列表 -->
+              <!-- 项目数据表格 -->
               <div class="flex-1 min-h-0">
                 <el-table
                   v-loading="projectLoading"
@@ -96,7 +123,7 @@
                   </el-table-column>
                 </el-table>
 
-                <!-- 分页 -->
+                <!-- 分页组件 -->
                 <div class="pagination mt-4">
                   <el-pagination
                     v-model:current-page="projectPagination.current"
@@ -120,130 +147,13 @@
           </div>
         </el-tab-pane>
 
-        <!-- 供应商管理 -->
-        <el-tab-pane label="供应商管理" name="supplier">
-          <div class="tab-content flex flex-col h-full">
-            <div v-if="hasAuth('project:supplier:view')">
-              <!-- 新增按钮和搜索栏放在同一行 -->
-              <div class="mb-4 flex justify-between items-center">
-                <!-- 搜索栏 -->
-                <div class="search-bar flex-grow">
-                  <el-form
-                    :inline="true"
-                    :model="supplierSearchForm"
-                    class="w-full"
-                  >
-                    <el-form-item label="供应商品牌">
-                      <el-input
-                        v-model="supplierSearchForm.supplierName"
-                        placeholder="请输入供应商品牌"
-                      />
-                    </el-form-item>
-                    <el-form-item label="联系人">
-                      <el-input
-                        v-model="supplierSearchForm.contact"
-                        placeholder="请输入联系人"
-                      />
-                    </el-form-item>
-                    <el-form-item>
-                      <el-button type="primary" @click="handleSupplierSearch">
-                        <el-icon><Search /></el-icon>
-                        搜索
-                      </el-button>
-                      <el-button @click="resetSupplierSearch">
-                        <el-icon><Refresh /></el-icon>
-                        重置
-                      </el-button>
-                    </el-form-item>
-                  </el-form>
-                </div>
-                <!-- 新增按钮 -->
-                <el-button
-                  v-if="hasAuth('project:supplier:add')"
-                  type="primary"
-                  class="ml-4"
-                  @click="handleAddSupplier"
-                >
-                  <el-icon><Plus /></el-icon>
-                  新增供应商
-                </el-button>
-              </div>
-
-              <!-- 供应商列表 -->
-              <div class="flex-1 min-h-0">
-                <el-table
-                  v-loading="supplierLoading"
-                  :data="supplierList"
-                  style="width: 100%"
-                  class="h-full"
-                  :max-height="`calc(100vh - 320px)`"
-                >
-                  <el-table-column prop="id" label="ID" width="80" />
-                  <el-table-column prop="supplierName" label="供应商名称" />
-                  <el-table-column prop="contact" label="联系人" />
-                  <el-table-column prop="phone" label="联系电话" />
-                  <el-table-column prop="address" label="地址" />
-                  <el-table-column prop="bank" label="开户银行" />
-                  <el-table-column prop="bankCard" label="银行卡号" />
-                  <el-table-column prop="email" label="邮箱" />
-                  <el-table-column prop="prepayBalance" label="预存余额" />
-                  <el-table-column prop="deliveryBalance" label="配送余额" />
-                  <el-table-column prop="createTime" label="创建时间" />
-                  <el-table-column label="操作" width="180">
-                    <template #default="scope">
-                      <el-button
-                        v-if="hasAuth('project:supplier:edit')"
-                        type="primary"
-                        size="small"
-                        @click="handleEditSupplier(scope.row)"
-                      >
-                        <el-icon><Edit /></el-icon>
-                        编辑
-                      </el-button>
-                      <el-button
-                        v-if="hasAuth('project:supplier:delete')"
-                        type="danger"
-                        size="small"
-                        @click="handleDeleteSupplier(scope.row.id)"
-                      >
-                        <el-icon><Delete /></el-icon>
-                        删除
-                      </el-button>
-                    </template>
-                  </el-table-column>
-                </el-table>
-
-                <!-- 分页 -->
-                <div class="pagination mt-4">
-                  <el-pagination
-                    v-model:current-page="supplierPagination.current"
-                    v-model:page-size="supplierPagination.pageSize"
-                    :page-sizes="[10, 20, 50, 100]"
-                    layout="total, sizes, prev, pager, next, jumper"
-                    :total="supplierPagination.total"
-                    @size-change="handleSupplierSizeChange"
-                    @current-change="handleSupplierCurrentChange"
-                  />
-                </div>
-              </div>
-            </div>
-            <!-- 无权限提示 -->
-            <div
-              v-else
-              class="no-permission flex-1 flex items-center justify-center"
-            >
-              <el-empty description="无权限查看数据" />
-            </div>
-          </div>
-        </el-tab-pane>
-
-        <!-- 项目分类 -->
+        <!-- 项目分类标签页 -->
         <el-tab-pane label="项目分类" name="category">
           <div class="tab-content flex flex-col h-full">
             <div v-if="hasAuth('project:category:view')">
-              <!-- 新增按钮和搜索栏放在同一行 -->
+              <!-- 搜索栏和操作按钮区域 -->
               <div class="mb-4 flex justify-between items-center">
-                <!-- 搜索栏 -->
+                <!-- 分类搜索表单 -->
                 <div class="search-bar flex-grow">
                   <el-form
                     :inline="true"
@@ -254,6 +164,7 @@
                       <el-segmented
                         v-model="categorySearchForm.departmentId"
                         :options="departmentSegmentedOptions"
+                        @change="handleCategorySearch"
                       />
                     </el-form-item>
                     <el-form-item label="分类名称">
@@ -274,7 +185,7 @@
                     </el-form-item>
                   </el-form>
                 </div>
-                <!-- 新增按钮 -->
+                <!-- 新增分类按钮 -->
                 <el-button
                   v-if="hasAuth('project:category:add')"
                   type="primary"
@@ -286,7 +197,7 @@
                 </el-button>
               </div>
 
-              <!-- 分类列表 -->
+              <!-- 分类数据表格 -->
               <div class="flex-1 min-h-0">
                 <el-table
                   v-loading="categoryLoading"
@@ -345,80 +256,13 @@
       </el-tabs>
     </el-card>
 
-    <!-- 新增/编辑供应商对话框 -->
-    <el-dialog
-      v-model="supplierDialogVisible"
-      :title="supplierDialogTitle"
-      width="500px"
-    >
-      <el-form
-        ref="supplierFormRef"
-        :model="supplierForm"
-        :rules="supplierRules"
-        label-width="100px"
-      >
-        <el-form-item label="供应商名称" prop="supplierName">
-          <el-input
-            v-model="supplierForm.supplierName"
-            placeholder="请输入供应商名称"
-          />
-        </el-form-item>
-        <el-form-item label="联系人" prop="contact">
-          <el-input v-model="supplierForm.contact" placeholder="请输入联系人" />
-        </el-form-item>
-        <el-form-item label="联系电话" prop="phone">
-          <el-input v-model="supplierForm.phone" placeholder="请输入联系电话" />
-        </el-form-item>
-        <el-form-item label="地址" prop="address">
-          <el-input v-model="supplierForm.address" placeholder="请输入地址" />
-        </el-form-item>
-        <el-form-item label="开户银行">
-          <el-input v-model="supplierForm.bank" placeholder="请输入开户银行" />
-        </el-form-item>
-        <el-form-item label="银行卡号">
-          <el-input
-            v-model="supplierForm.bankCard"
-            placeholder="请输入银行卡号"
-          />
-        </el-form-item>
-        <el-form-item label="邮箱">
-          <el-input v-model="supplierForm.email" placeholder="请输入邮箱" />
-        </el-form-item>
-        <el-form-item label="预存余额">
-          <el-input
-            v-model.number="supplierForm.prepayBalance"
-            type="number"
-            placeholder="请输入预存余额"
-          />
-        </el-form-item>
-        <el-form-item label="配送余额">
-          <el-input
-            v-model.number="supplierForm.deliveryBalance"
-            type="number"
-            placeholder="请输入配送余额"
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="supplierDialogVisible = false">
-            <el-icon><Close /></el-icon>
-            取消
-          </el-button>
-          <el-button type="primary" @click="handleSubmitSupplier">
-            <el-icon><Check /></el-icon>
-            确定
-          </el-button>
-        </span>
-      </template>
-    </el-dialog>
-
     <!-- 新增/编辑分类对话框 -->
     <el-dialog
       v-model="categoryDialogVisible"
       :title="categoryDialogTitle"
       width="500px"
     >
+      <!-- 分类表单 -->
       <el-form
         ref="categoryFormRef"
         :model="categoryForm"
@@ -475,8 +319,9 @@
       width="800px"
     >
       <el-tabs v-model="activeProjectTab" type="border-card">
-        <!-- 基本信息 -->
+        <!-- 基本信息标签页 -->
         <el-tab-pane label="基本信息" name="basic">
+          <!-- 项目基本信息表单 -->
           <el-form
             ref="projectFormRef"
             :model="projectForm"
@@ -710,9 +555,9 @@
           </el-form>
         </el-tab-pane>
 
-        <!-- 项目提醒与设置 -->
+        <!-- 项目提醒与设置标签页 -->
         <el-tab-pane label="项目提醒与设置" name="reminder-settings">
-          <!-- 功能开关 -->
+          <!-- 功能开关设置 -->
           <div class="mb-6">
             <div
               class="el-divider el-divider--horizontal"
@@ -739,7 +584,7 @@
             </el-form>
           </div>
 
-          <!-- 护理后提醒 -->
+          <!-- 护理后提醒设置 -->
           <div>
             <div
               class="el-divider el-divider--horizontal"
@@ -861,7 +706,7 @@
           </div>
         </el-tab-pane>
 
-        <!-- 项目配料单 -->
+        <!-- 项目配料单标签页 -->
         <el-tab-pane label="项目配料单" name="ingredients">
           <el-table :data="projectForm.ingredients" style="width: 100%">
             <el-table-column prop="product" label="产品" width="180">
@@ -915,7 +760,7 @@
           >
         </el-tab-pane>
 
-        <!-- 子项目配置 -->
+        <!-- 子项目配置标签页 -->
         <el-tab-pane label="子项目配置" name="subProjects">
           <el-table :data="projectForm.subProjects" style="width: 100%">
             <el-table-column prop="subProjectName" label="项目名称" width="200">
@@ -975,6 +820,14 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * 品项管理页面脚本
+ * 
+ * 主要功能：
+ * 1. 品项管理 - CRUD操作、搜索、分页
+ * 2. 项目分类管理 - CRUD操作、按部门筛选
+ * 3. 项目详情配置 - 基本信息、提醒设置、配料单、子项目
+ */
 import { ref, reactive, onMounted, computed, watch } from "vue";
 import {
   Plus,
@@ -989,14 +842,18 @@ import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
 import { hasAuth } from "@/router/utils";
 import { http } from "@/utils/http";
 
-// 当前激活的标签页
+// ==================== 状态定义 ====================
+
+/** 当前激活的主标签页 */
 const activeTab = ref("project");
+
+/** 当前激活的项目表单标签页 */
 const activeProjectTab = ref("basic");
 
-// 分店列表
+/** 分店列表 */
 const storeList = ref([]);
 
-// 部位类型选项数组
+/** 部位类型选项数组 - 用于项目表单中的部位类型多选 */
 const projectTypeOptions = [
   { label: "面部", value: "面部" },
   { label: "眼部", value: "眼部" },
@@ -1019,17 +876,11 @@ const projectTypeOptions = [
   { label: "卵巢", value: "卵巢" }
 ];
 
-// 加载状态
-const supplierLoading = ref(false);
+/** 加载状态 */
 const categoryLoading = ref(false);
 const projectLoading = ref(false);
 
-// 搜索表单
-const supplierSearchForm = reactive({
-  supplierName: "",
-  contact: ""
-});
-
+/** 分类搜索表单 */
 const categorySearchForm = reactive({
   departmentId: "",
   categoryName: ""
@@ -1040,64 +891,70 @@ const projectSearchForm = reactive({
   categoryId: []
 });
 
-// 分页信息
-const supplierPagination = reactive({
-  current: 1,
-  pageSize: 10,
-  total: 0
+/** 项目搜索表单 */
+const projectSearchForm = reactive({
+  projectName: "",
+  categoryId: []
 });
 
+/** 项目分页信息 */
 const projectPagination = reactive({
   current: 1,
   pageSize: 10,
   total: 0
 });
 
-// 数据列表
-const supplierList = ref([]);
-const categoryList = ref([]);
-const projectList = ref([]);
-const departmentList = ref([]);
-
-// 供应商对话框相关
-const supplierDialogVisible = ref(false);
-const supplierDialogTitle = ref("");
-const supplierFormRef = ref<FormInstance>();
-const currentSupplierId = ref<number | null>(null);
-
-// 分类对话框相关
-const categoryDialogVisible = ref(false);
-const categoryDialogTitle = ref("");
-const categoryFormRef = ref<FormInstance>();
-const currentCategoryId = ref<number | null>(null);
-
-// 项目对话框相关
-const projectDialogVisible = ref(false);
-const projectDialogTitle = ref("");
-const projectFormRef = ref<FormInstance>();
-const currentProjectId = ref<number | null>(null);
-
-// 供应商表单数据
-const supplierForm = reactive({
-  supplierName: "",
-  contact: "",
-  phone: "",
-  address: "",
-  bank: "",
-  bankCard: "",
-  email: "",
-  prepayBalance: 0,
-  deliveryBalance: 0
+/** 分类分页信息 */
+const categoryPagination = reactive({
+  current: 1,
+  pageSize: 10,
+  total: 0
 });
 
-// 分类表单数据
+/** 供应商列表 - 用于项目表单选择 */
+const supplierList = ref([]);
+
+/** 分类列表数据 */
+const categoryList = ref([]);
+
+/** 项目列表数据 */
+const projectList = ref([]);
+
+/** 部门列表数据 */
+const departmentList = ref([]);
+
+/** 分类对话框可见性 */
+const categoryDialogVisible = ref(false);
+
+/** 分类对话框标题 */
+const categoryDialogTitle = ref("");
+
+/** 分类表单引用 */
+const categoryFormRef = ref<FormInstance>();
+
+/** 当前编辑的分类ID */
+const currentCategoryId = ref<number | null>(null);
+
+/** 项目对话框可见性 */
+const projectDialogVisible = ref(false);
+
+/** 项目对话框标题 */
+const projectDialogTitle = ref("");
+
+/** 项目表单引用 */
+const projectFormRef = ref<FormInstance>();
+
+/** 当前编辑的项目ID */
+const currentProjectId = ref<number | null>(null);
+
+/** 分类表单数据 */
 const categoryForm = reactive({
   categoryName: "",
   departmentId: null,
   sort: 0
 });
 
-// 项目表单数据
+/** 项目表单数据 */
 const projectForm = reactive({
   projectName: "",
   categoryId: [],
@@ -1138,10 +995,12 @@ const projectForm = reactive({
   subProjects: []
 });
 
-// 功能开关复选框组
+/** 功能开关复选框组 - 用于绑定功能开关选项 */
 const featuresCheckboxGroup = ref([]);
 
-// 监听功能开关变化
+// ==================== 监听器 ====================
+
+/** 监听功能开关变化，同步到复选框组 */
 watch(
   () => projectForm.features,
   newFeatures => {
@@ -1153,7 +1012,7 @@ watch(
   { deep: true, immediate: true }
 );
 
-// 监听复选框组变化
+/** 监听复选框组变化，同步到功能开关对象 */
 watch(
   featuresCheckboxGroup,
   newValues => {
@@ -1173,7 +1032,7 @@ watch(
   { deep: true }
 );
 
-// 监听项目名称变化，自动填充对外名称
+/** 监听项目名称变化，自动填充对外名称 */
 watch(
   () => projectForm.projectName,
   newValue => {
@@ -1184,14 +1043,9 @@ watch(
   }
 );
 
-// 供应商表单验证规则
-const supplierRules = reactive({
-  supplierName: [
-    { required: true, message: "请输入供应商名称", trigger: "blur" }
-  ]
-});
+// ==================== 表单验证规则 ====================
 
-// 分类表单验证规则
+/** 分类表单验证规则 */
 const categoryRules = reactive({
   categoryName: [
     { required: true, message: "请输入分类名称", trigger: "blur" }
@@ -1199,25 +1053,59 @@ const categoryRules = reactive({
   departmentId: [{ required: true, message: "请选择所属部门", trigger: "blur" }]
 });
 
-// 项目表单验证规则
+/** 项目表单验证规则 */
 const projectRules = reactive({
   projectName: [{ required: true, message: "请输入项目名称", trigger: "blur" }],
   categoryId: [{ required: true, message: "请选择所属分类", trigger: "blur" }],
   originalPrice: [
-    { required: true, message: "请输入原价", trigger: "blur" },
-    { type: "number", min: 0, message: "原价必须大于等于0", trigger: "blur" }
+    { 
+      validator: (rule: any, value: any, callback: any) => {
+        if (value === '' || value === null || value === undefined) {
+          callback(new Error('请输入原价'));
+        } else if (isNaN(Number(value))) {
+          callback(new Error('原价必须是数字'));
+        } else if (Number(value) < 0) {
+          callback(new Error('原价必须大于等于0'));
+        } else {
+          callback();
+        }
+      },
+      trigger: "blur"
+    }
   ],
   singlePrice: [
-    { required: true, message: "请输入单次销售价格", trigger: "blur" },
-    {
-      type: "number",
-      min: 0,
-      message: "单次销售价格必须大于等于0",
+    { 
+      validator: (rule: any, value: any, callback: any) => {
+        if (value === '' || value === null || value === undefined) {
+          callback(new Error('请输入单次销售价格'));
+        } else if (isNaN(Number(value))) {
+          callback(new Error('单次销售价格必须是数字'));
+        } else if (Number(value) < 0) {
+          callback(new Error('单次销售价格必须大于等于0'));
+        } else {
+          callback();
+        }
+      },
       trigger: "blur"
     }
   ],
   experiencePrice: [
-    { type: "number", min: 0, message: "体验价必须大于等于0", trigger: "blur" }
+    { 
+      validator: (rule: any, value: any, callback: any) => {
+        if (value !== '' && value !== null && value !== undefined) {
+          if (isNaN(Number(value))) {
+            callback(new Error('体验价必须是数字'));
+          } else if (Number(value) < 0) {
+            callback(new Error('体验价必须大于等于0'));
+          } else {
+            callback();
+          }
+        } else {
+          callback();
+        }
+      },
+      trigger: "blur"
+    }
   ],
   externalName: [
     { required: true, message: "请输入外部显示名", trigger: "blur" }
@@ -1234,36 +1122,80 @@ const projectRules = reactive({
   ],
   monthlyLimit: [
     {
-      type: "number",
-      min: 0,
-      message: "消费限次/月必须大于等于0",
+      validator: (rule: any, value: any, callback: any) => {
+        if (value !== '' && value !== null && value !== undefined) {
+          if (isNaN(Number(value))) {
+            callback(new Error('消费限次/月必须是数字'));
+          } else if (Number(value) < 0) {
+            callback(new Error('消费限次/月必须大于等于0'));
+          } else {
+            callback();
+          }
+        } else {
+          callback();
+        }
+      },
       trigger: "blur"
     }
   ],
   consumptionInterval: [
     {
-      type: "number",
-      min: 0,
-      message: "消费间隔时间必须大于等于0",
+      validator: (rule: any, value: any, callback: any) => {
+        if (value !== '' && value !== null && value !== undefined) {
+          if (isNaN(Number(value))) {
+            callback(new Error('消费间隔时间必须是数字'));
+          } else if (Number(value) < 0) {
+            callback(new Error('消费间隔时间必须大于等于0'));
+          } else {
+            callback();
+          }
+        } else {
+          callback();
+        }
+      },
       trigger: "blur"
     }
   ],
   workHours: [
-    { required: true, message: "请输入工时", trigger: "blur" },
-    { type: "number", min: 0, message: "工时必须大于等于0", trigger: "blur" }
+    { 
+      validator: (rule: any, value: any, callback: any) => {
+        if (value === '' || value === null || value === undefined) {
+          callback(new Error('请输入工时'));
+        } else if (isNaN(Number(value))) {
+          callback(new Error('工时必须是数字'));
+        } else if (Number(value) < 0) {
+          callback(new Error('工时必须大于等于0'));
+        } else {
+          callback();
+        }
+      },
+      trigger: "blur"
+    }
   ],
   serviceTime: [
-    { required: true, message: "请输入服务时间", trigger: "blur" },
-    {
-      type: "number",
-      min: 0,
-      message: "服务时间必须大于等于0",
+    { 
+      validator: (rule: any, value: any, callback: any) => {
+        if (value === '' || value === null || value === undefined) {
+          callback(new Error('请输入服务时间'));
+        } else if (isNaN(Number(value))) {
+          callback(new Error('服务时间必须是数字'));
+        } else if (Number(value) < 0) {
+          callback(new Error('服务时间必须大于等于0'));
+        } else {
+          callback();
+        }
+      },
       trigger: "blur"
     }
   ]
 });
 
-// 初始化数据
+// ==================== 生命周期 ====================
+
+/**
+ * 组件挂载时初始化数据
+ * 根据权限加载对应的数据列表
+ */
 onMounted(() => {
   // 只在有对应权限时调用API获取数据
   if (hasAuth("project:project:view")) {
@@ -1280,7 +1212,12 @@ onMounted(() => {
   getStoreList();
 });
 
-// 获取分店列表
+// ==================== 数据获取方法 ====================
+
+/**
+ * 获取分店列表
+ * 用于项目表单中的限定销售/服务分店选择
+ */
 const getStoreList = async () => {
   try {
     // 这里应该调用实际的API获取分店列表
@@ -1300,7 +1237,11 @@ const getStoreList = async () => {
   }
 };
 
-// 处理标签页切换
+/**
+ * 处理标签页切换
+ * 切换时加载对应标签页的数据
+ * @param tab - 标签页实例
+ */
 const handleTabClick = (tab: any) => {
   // 切换到供应商管理标签页时加载数据
   if (tab.props.name === "supplier" && hasAuth("project:supplier:view")) {
@@ -1317,36 +1258,25 @@ const handleTabClick = (tab: any) => {
   }
 };
 
-// 获取供应商列表
+/**
+ * 获取供应商列表
+ * 用于项目表单中的供应商选择
+ */
 const getSupplierList = async () => {
-  if (!hasAuth("project:supplier:view")) {
-    return;
-  }
-
-  supplierLoading.value = true;
   try {
-    // 使用http工具类获取数据，自动处理认证
-    const response = await http.get("/api/card-item/get-suppliers", {
-      params: {
-        supplierName: supplierSearchForm.supplierName,
-        contact: supplierSearchForm.contact,
-        page: supplierPagination.current,
-        pageSize: supplierPagination.pageSize
-      }
-    });
-
+    const response = await http.get("/api/card-item/get-suppliers");
     if (response.code === 200) {
       supplierList.value = response.data || [];
-      supplierPagination.total = response.data?.length || 0;
     }
   } catch (error) {
     console.error("获取供应商列表失败", error);
-  } finally {
-    supplierLoading.value = false;
   }
 };
 
-// 获取项目分类列表
+/**
+ * 获取项目分类列表
+ * 支持按部门ID和分类名称筛选
+ */
 const getCategoryList = async () => {
   if (!hasAuth("project:category:view")) {
     return;
@@ -1372,7 +1302,10 @@ const getCategoryList = async () => {
   }
 };
 
-// 获取核心业务部门列表
+/**
+ * 获取核心业务部门列表
+ * 用于分类表单中的部门选择
+ */
 const getDepartmentList = async () => {
   if (!hasAuth("project:category:view")) {
     return;
@@ -1390,7 +1323,10 @@ const getDepartmentList = async () => {
   }
 };
 
-// 获取项目列表
+/**
+ * 获取项目列表
+ * 支持按项目名称和分类ID筛选，支持分页
+ */
 const getProjectList = async () => {
   if (!hasAuth("project:project:view")) {
     return;
@@ -1429,34 +1365,27 @@ const getProjectList = async () => {
   }
 };
 
-// 搜索方法
-const handleSupplierSearch = () => {
-  supplierPagination.current = 1;
-  getSupplierList();
-};
+// ==================== 搜索方法 ====================
 
-const resetSupplierSearch = () => {
-  supplierSearchForm.supplierName = "";
-  supplierSearchForm.contact = "";
-  supplierPagination.current = 1;
-  getSupplierList();
-};
-
+/** 执行分类搜索 */
 const handleCategorySearch = () => {
   getCategoryList();
 };
 
+/** 重置分类搜索条件 */
 const resetCategorySearch = () => {
   categorySearchForm.categoryName = "";
   categorySearchForm.departmentId = "";
   getCategoryList();
 };
 
+/** 执行项目搜索 */
 const handleProjectSearch = () => {
   projectPagination.current = 1;
   getProjectList();
 };
 
+/** 重置项目搜索条件 */
 const resetProjectSearch = () => {
   projectSearchForm.projectName = "";
   projectSearchForm.categoryId = "";
@@ -1464,36 +1393,29 @@ const resetProjectSearch = () => {
   getProjectList();
 };
 
-// 分页方法
-const handleSupplierSizeChange = (size: number) => {
-  supplierPagination.pageSize = size;
-  getSupplierList();
-};
+// ==================== 分页方法 ====================
 
-const handleSupplierCurrentChange = (current: number) => {
-  supplierPagination.current = current;
-  getSupplierList();
-};
-
+/**
+ * 处理项目分页大小变化
+ * @param size - 新的分页大小
+ */
 const handleProjectSizeChange = (size: number) => {
   projectPagination.pageSize = size;
   getProjectList();
 };
 
+/**
+ * 处理项目当前页变化
+ * @param current - 新的当前页码
+ */
 const handleProjectCurrentChange = (current: number) => {
   projectPagination.current = current;
   getProjectList();
 };
 
-// 新增方法
-const handleAddSupplier = () => {
-  // 重置表单
-  resetSupplierForm();
-  supplierDialogTitle.value = "新增供应商";
-  currentSupplierId.value = null;
-  supplierDialogVisible.value = true;
-};
+// ==================== 新增方法 ====================
 
+/** 打开新增分类对话框 */
 const handleAddCategory = () => {
   // 重置表单
   resetCategoryForm();
@@ -1502,6 +1424,7 @@ const handleAddCategory = () => {
   categoryDialogVisible.value = true;
 };
 
+/** 打开新增项目对话框 */
 const handleAddProject = () => {
   // 重置表单
   resetProjectForm();
@@ -1510,25 +1433,12 @@ const handleAddProject = () => {
   projectDialogVisible.value = true;
 };
 
-// 编辑方法
-const handleEditSupplier = (row: any) => {
-  // 填充表单数据
-  Object.assign(supplierForm, {
-    supplierName: row.supplierName,
-    contact: row.contact,
-    phone: row.phone,
-    address: row.address,
-    bank: row.bank || "",
-    bankCard: row.bankCard || "",
-    email: row.email || "",
-    prepayBalance: row.prepayBalance || 0,
-    deliveryBalance: row.deliveryBalance || 0
-  });
-  supplierDialogTitle.value = "编辑供应商";
-  currentSupplierId.value = row.id;
-  supplierDialogVisible.value = true;
-};
+// ==================== 编辑方法 ====================
 
+/**
+ * 打开编辑分类对话框
+ * @param row - 分类数据行
+ */
 const handleEditCategory = (row: any) => {
   // 填充表单数据
   Object.assign(categoryForm, {
@@ -1541,6 +1451,11 @@ const handleEditCategory = (row: any) => {
   categoryDialogVisible.value = true;
 };
 
+/**
+ * 打开编辑项目对话框
+ * 加载项目详情、配料单和子项目数据
+ * @param row - 项目数据行
+ */
 const handleEditProject = async (row: any) => {
   // 处理分类ID，转换为级联选择器需要的数组格式
   // 由于我们只存储了最底层的分类ID，这里简单地使用单个值的数组
@@ -1625,40 +1540,13 @@ const handleEditProject = async (row: any) => {
   projectDialogVisible.value = true;
 };
 
-// 删除方法
-const handleDeleteSupplier = async (id: number) => {
-  ElMessageBox.confirm("确定要删除该供应商吗？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning"
-  })
-    .then(async () => {
-      supplierLoading.value = true;
-      try {
-        // 使用http工具类删除数据，自动处理认证
-        const response = await http.delete(
-          `/api/card-item/delete-supplier/${id}`
-        );
+// ==================== 删除方法 ====================
 
-        if (response.code === 200) {
-          supplierLoading.value = false;
-          ElMessage.success("删除成功");
-          getSupplierList();
-        } else {
-          supplierLoading.value = false;
-          ElMessage.error(response.message || "删除失败");
-        }
-      } catch (error) {
-        supplierLoading.value = false;
-        console.error("删除供应商失败", error);
-        ElMessage.error("网络错误，请稍后重试");
-      }
-    })
-    .catch(() => {
-      // 取消删除
-    });
-};
-
+/**
+ * 删除分类
+ * 弹出确认框，确认后调用API删除
+ * @param id - 分类ID
+ */
 const handleDeleteCategory = async (id: number) => {
   ElMessageBox.confirm("确定要删除该分类吗？", "警告", {
     confirmButtonText: "确定",
@@ -1692,6 +1580,11 @@ const handleDeleteCategory = async (id: number) => {
     });
 };
 
+/**
+ * 删除项目
+ * 弹出确认框，确认后调用API删除
+ * @param id - 项目ID
+ */
 const handleDeleteProject = async (id: number) => {
   ElMessageBox.confirm("确定要删除该项目吗？", "警告", {
     confirmButtonText: "确定",
@@ -1725,70 +1618,9 @@ const handleDeleteProject = async (id: number) => {
     });
 };
 
-// 供应商表单相关方法
-const resetSupplierForm = () => {
-  supplierFormRef.value?.resetFields();
-  Object.assign(supplierForm, {
-    supplierName: "",
-    contact: "",
-    phone: "",
-    address: "",
-    bank: "",
-    bankCard: "",
-    email: "",
-    prepayBalance: 0,
-    deliveryBalance: 0
-  });
-  currentSupplierId.value = null;
-};
+// ==================== 表单操作方法 ====================
 
-const handleSubmitSupplier = async () => {
-  if (!supplierFormRef.value) return;
-
-  try {
-    await supplierFormRef.value.validate();
-
-    supplierLoading.value = true;
-
-    // 构建提交数据，自动添加companyId字段（默认使用当前用户所属公司ID）
-    const submitData = {
-      ...supplierForm,
-      companyId: 2 // 默认使用当前用户所属公司ID
-    };
-
-    let response;
-    if (currentSupplierId.value) {
-      // 编辑供应商
-      response = await http.put(
-        `/api/card-item/update-supplier/${currentSupplierId.value}`,
-        {
-          data: submitData
-        }
-      );
-    } else {
-      // 新增供应商
-      response = await http.post("/api/card-item/add-supplier", {
-        data: submitData
-      });
-    }
-
-    if (response.code === 200) {
-      supplierLoading.value = false;
-      supplierDialogVisible.value = false;
-      ElMessage.success(currentSupplierId.value ? "编辑成功" : "新增成功");
-      getSupplierList();
-    } else {
-      supplierLoading.value = false;
-      ElMessage.error(response.message || "操作失败");
-    }
-  } catch (error) {
-    supplierLoading.value = false;
-    console.error("操作失败", error);
-    ElMessage.error("网络错误，请稍后重试");
-  }
-};
-
-// 分类表单相关方法
+/** 重置分类表单 */
 const resetCategoryForm = () => {
   categoryFormRef.value?.resetFields();
   Object.assign(categoryForm, {
@@ -1799,6 +1631,10 @@ const resetCategoryForm = () => {
   currentCategoryId.value = null;
 };
 
+/**
+ * 提交分类表单
+ * 验证表单后调用新增或更新API
+ */
 const handleSubmitCategory = async () => {
   if (!categoryFormRef.value) return;
 
@@ -1846,7 +1682,7 @@ const handleSubmitCategory = async () => {
   }
 };
 
-// 项目表单相关方法
+/** 重置项目表单 */
 const resetProjectForm = () => {
   projectFormRef.value?.resetFields();
   Object.assign(projectForm, {
@@ -1891,7 +1727,7 @@ const resetProjectForm = () => {
   currentProjectId.value = null;
 };
 
-// 添加配料
+/** 添加配料项 */
 const addIngredient = () => {
   projectForm.ingredients.push({
     product: "",
@@ -1902,12 +1738,15 @@ const addIngredient = () => {
   });
 };
 
-// 删除配料
+/**
+ * 删除配料项
+ * @param index - 配料项索引
+ */
 const removeIngredient = (index: number) => {
   projectForm.ingredients.splice(index, 1);
 };
 
-// 添加子项目
+/** 添加子项目 */
 const addSubProject = () => {
   projectForm.subProjects.push({
     subProjectName: "",
@@ -1915,11 +1754,19 @@ const addSubProject = () => {
   });
 };
 
-// 删除子项目
+/**
+ * 删除子项目
+ * @param index - 子项目索引
+ */
 const removeSubProject = (index: number) => {
   projectForm.subProjects.splice(index, 1);
 };
 
+/**
+ * 提交项目表单
+ * 验证表单后调用新增或更新API
+ * 包含基本信息、提醒设置、配料单、子项目等数据
+ */
 const handleSubmitProject = async () => {
   if (!projectFormRef.value) return;
 
@@ -2025,14 +1872,24 @@ const handleSubmitProject = async () => {
   }
 };
 
-// 获取分类名称
+// ==================== 工具方法 ====================
+
+/**
+ * 根据分类ID获取分类名称
+ * @param categoryId - 分类ID
+ * @returns 分类名称
+ */
 const getCategoryName = (categoryId: string | number) => {
   if (!categoryId) return "";
   const category = categoryList.value.find(item => item.id === categoryId);
   return category ? category.categoryName : categoryId;
 };
 
-// 获取部门名称
+/**
+ * 根据部门ID获取部门名称
+ * @param departmentId - 部门ID
+ * @returns 部门名称
+ */
 const getDepartmentName = (departmentId: string | number) => {
   if (!departmentId) return "";
   const department = departmentList.value.find(
@@ -2041,7 +1898,9 @@ const getDepartmentName = (departmentId: string | number) => {
   return department ? department.deptName : departmentId;
 };
 
-// 计算级联选择器数据
+// ==================== 计算属性 ====================
+
+/** 级联选择器分类数据 - 将分类列表转换为级联选择器格式 */
 const cascaderCategoryData = computed(() => {
   return categoryList.value.map(item => ({
     value: item.id,
@@ -2049,19 +1908,27 @@ const cascaderCategoryData = computed(() => {
   }));
 });
 
-// 处理级联选择器变化
+// ==================== 事件处理方法 ====================
+
+/**
+ * 处理搜索栏分类级联选择器变化
+ * @param value - 选中的分类ID数组
+ */
 const handleCategoryCascaderChange = (value: any) => {
   // 级联选择器返回的是数组，我们只需要最后一个值（即选中的最底层分类ID）
   projectSearchForm.categoryId = value;
 };
 
-// 处理项目表单级联选择器变化
+/**
+ * 处理项目表单分类级联选择器变化
+ * @param value - 选中的分类ID数组
+ */
 const handleProjectCategoryCascaderChange = (value: any) => {
   // 级联选择器返回的是数组，我们只需要最后一个值（即选中的最底层分类ID）
   projectForm.categoryId = value;
 };
 
-// 计算部门分段控件选项
+/** 部门分段控件选项 - 将部门列表转换为分段控件格式 */
 const departmentSegmentedOptions = computed(() => {
   const options = [{ label: "全部", value: "" }];
   departmentList.value.forEach(dept => {
