@@ -333,8 +333,18 @@
                 <el-input
                   v-model="projectForm.projectName"
                   placeholder="请输入项目名称"
+                  @input="generateProjectCode"
                 />
               </el-form-item>
+              <el-form-item label="项目编码" class="flex-1">
+                <el-input
+                  v-model="projectForm.projectCode"
+                  placeholder="自动生成"
+                  disabled
+                />
+              </el-form-item>
+            </div>
+            <div class="flex gap-4">
               <el-form-item label="对外名称" prop="externalName" class="flex-1">
                 <el-input
                   v-model="projectForm.externalName"
@@ -841,6 +851,7 @@ import {
 import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
 import { hasAuth } from "@/router/utils";
 import { http } from "@/utils/http";
+import { pinyin } from "pinyin-pro";
 
 // ==================== 状态定义 ====================
 
@@ -884,11 +895,6 @@ const projectLoading = ref(false);
 const categorySearchForm = reactive({
   departmentId: "",
   categoryName: ""
-});
-
-const projectSearchForm = reactive({
-  projectName: "",
-  categoryId: []
 });
 
 /** 项目搜索表单 */
@@ -957,6 +963,7 @@ const categoryForm = reactive({
 /** 项目表单数据 */
 const projectForm = reactive({
   projectName: "",
+  projectCode: "",
   categoryId: [],
   originalPrice: 0,
   singlePrice: 0,
@@ -1212,6 +1219,28 @@ onMounted(() => {
   getStoreList();
 });
 
+// ==================== 工具方法 ====================
+
+/** 根据项目名称自动生成项目编码（取汉字拼音首字母） */
+const generateProjectCode = () => {
+  if (projectForm.projectName) {
+    const name = projectForm.projectName;
+    let code = "";
+    for (const char of name) {
+      const codePoint = char.codePointAt(0);
+      if (codePoint >= 65 && codePoint <= 90) {
+        code += char;
+      } else if (codePoint >= 97 && codePoint <= 122) {
+        code += char.toUpperCase();
+      } else if (codePoint >= 0x4e00 && codePoint <= 0x9fff) {
+        const py = pinyin(char, { pattern: "first", toneType: "none" });
+        code += py.toUpperCase();
+      }
+    }
+    projectForm.projectCode = code.substring(0, 10);
+  }
+};
+
 // ==================== 数据获取方法 ====================
 
 /**
@@ -1464,6 +1493,7 @@ const handleEditProject = async (row: any) => {
   // 填充表单数据
   Object.assign(projectForm, {
     projectName: row.projectName,
+    projectCode: row.projectCode || "",
     categoryId: categoryIdArray,
     originalPrice: row.originalPrice || 0,
     singlePrice: row.singleSalePrice || 0,
@@ -1687,6 +1717,7 @@ const resetProjectForm = () => {
   projectFormRef.value?.resetFields();
   Object.assign(projectForm, {
     projectName: "",
+    projectCode: "",
     categoryId: [],
     originalPrice: 0,
     singlePrice: 0,

@@ -342,6 +342,7 @@
                 <el-checkbox label="noDiscount">充值卡不打折</el-checkbox>
                 <el-checkbox label="allowGift">允许赠送</el-checkbox>
                 <el-checkbox label="noConsumption">不计消耗</el-checkbox>
+                <el-checkbox label="noModify">禁止修改</el-checkbox>
                 <el-checkbox label="isCooperative">合作产品</el-checkbox>
                 <el-checkbox label="isYm">YM产品</el-checkbox>
                 <el-checkbox label="isSpecial">特项产品</el-checkbox>
@@ -402,6 +403,7 @@ import { Plus, Edit, Delete, Search, Refresh } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
 import { hasAuth } from "@/router/utils";
 import http from "@/utils/http";
+import { pinyin } from "pinyin-pro";
 
 // ==================== 状态定义 ====================
 
@@ -487,6 +489,7 @@ const productForm = reactive({
   noDiscount: 0,
   allowGift: 0,
   noConsumption: 0,
+  noModify: 0,
   isCooperative: 0,
   isYm: 0,
   isSpecial: 0
@@ -513,6 +516,7 @@ watch(featuresCheckboxGroup, (val) => {
   productForm.noDiscount = val.includes("noDiscount") ? 1 : 0;
   productForm.allowGift = val.includes("allowGift") ? 1 : 0;
   productForm.noConsumption = val.includes("noConsumption") ? 1 : 0;
+  productForm.noModify = val.includes("noModify") ? 1 : 0;
   productForm.isCooperative = val.includes("isCooperative") ? 1 : 0;
   productForm.isYm = val.includes("isYm") ? 1 : 0;
   productForm.isSpecial = val.includes("isSpecial") ? 1 : 0;
@@ -537,16 +541,23 @@ onMounted(() => {
 
 // ==================== 工具方法 ====================
 
-/** 根据产品名称自动生成产品编码（取首字母） */
+/** 根据产品名称自动生成产品编码（取汉字拼音首字母） */
 const generateProductCode = () => {
   if (productForm.productName) {
-    const pinyin = productForm.productName.split("").map((char) => {
-      const code = char.charCodeAt(0);
-      if (code >= 65 && code <= 90) return char;
-      if (code >= 97 && code <= 122) return char.toUpperCase();
-      return "";
-    }).join("");
-    productForm.productCode = pinyin.substring(0, 10).toUpperCase();
+    const name = productForm.productName;
+    let code = "";
+    for (const char of name) {
+      const codePoint = char.codePointAt(0);
+      if (codePoint >= 65 && codePoint <= 90) {
+        code += char;
+      } else if (codePoint >= 97 && codePoint <= 122) {
+        code += char.toUpperCase();
+      } else if (codePoint >= 0x4e00 && codePoint <= 0x9fff) {
+        const py = pinyin(char, { pattern: "first", toneType: "none" });
+        code += py.toUpperCase();
+      }
+    }
+    productForm.productCode = code.substring(0, 10);
   }
 };
 
@@ -643,7 +654,7 @@ const resetProductForm = () => {
   productFormRef.value?.resetFields();
   const allStoreIds = storeList.value.map((s: any) => s.id);
   const allDeptIds = coreDepartmentList.value.map((d: any) => d.id);
-  Object.assign(productForm, { productName: "", productCode: "", externalName: "", barcode: "", categoryId: null, supplierId: null, unit: "", monthlyLimit: 0, consumptionInterval: 0, specificationNum: null, specificationUnit: "", specification: "", originalPrice: 0, salePrice: 0, experiencePrice: 0, purchasePrice: 0, onlineDate: null, offlineDate: null, stockMin: 0, stockMax: 0, approvalNumber: "", expiryDate: null, status: 1, remark: "", limitedSaleStores: [...allStoreIds], limitedConsumeStores: [...allStoreIds], limitedSaleDepts: [...allDeptIds], limitedConsumeDepts: [...allDeptIds], noDiscount: 0, allowGift: 0, noConsumption: 0, isCooperative: 0, isYm: 0, isSpecial: 0 });
+  Object.assign(productForm, { productName: "", productCode: "", externalName: "", barcode: "", categoryId: null, supplierId: null, unit: "", monthlyLimit: 0, consumptionInterval: 0, specificationNum: null, specificationUnit: "", specification: "", originalPrice: 0, salePrice: 0, experiencePrice: 0, purchasePrice: 0, onlineDate: null, offlineDate: null, stockMin: 0, stockMax: 0, approvalNumber: "", expiryDate: null, status: 1, remark: "", limitedSaleStores: [...allStoreIds], limitedConsumeStores: [...allStoreIds], limitedSaleDepts: [...allDeptIds], limitedConsumeDepts: [...allDeptIds], noDiscount: 0, allowGift: 0, noConsumption: 0, noModify: 0, isCooperative: 0, isYm: 0, isSpecial: 0 });
   featuresCheckboxGroup.value = [];
   productFormTab.value = "basic";
 };
@@ -676,13 +687,14 @@ const handleEditProduct = (row: any) => {
     expiryDate: row.expiryDate, status: row.status ?? 1, remark: row.remark || "",
     limitedSaleStores: row.limitedSaleStores || [], limitedConsumeStores: row.limitedConsumeStores || [],
     limitedSaleDepts: row.limitedSaleDepts || [], limitedConsumeDepts: row.limitedConsumeDepts || [],
-    noDiscount: row.noDiscount || 0, allowGift: row.allowGift || 0, noConsumption: row.noConsumption || 0,
+    noDiscount: row.noDiscount || 0, allowGift: row.allowGift || 0, noConsumption: row.noConsumption || 0, noModify: row.noModify || 0,
     isCooperative: row.isCooperative || 0, isYm: row.isYm || 0, isSpecial: row.isSpecial || 0
   });
   featuresCheckboxGroup.value = [];
   if (row.noDiscount) featuresCheckboxGroup.value.push("noDiscount");
   if (row.allowGift) featuresCheckboxGroup.value.push("allowGift");
   if (row.noConsumption) featuresCheckboxGroup.value.push("noConsumption");
+  if (row.noModify) featuresCheckboxGroup.value.push("noModify");
   if (row.isCooperative) featuresCheckboxGroup.value.push("isCooperative");
   if (row.isYm) featuresCheckboxGroup.value.push("isYm");
   if (row.isSpecial) featuresCheckboxGroup.value.push("isSpecial");

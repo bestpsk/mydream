@@ -416,6 +416,7 @@ class CardItemController
                 return [
                     'id' => $project->id,
                     'projectName' => $project->project_name,
+                    'projectCode' => $project->project_code ?? '',
                     'categoryId' => $project->category_id,
                     'originalPrice' => $project->original_price,
                     'singleSalePrice' => $project->single_sale_price,
@@ -466,6 +467,7 @@ class CardItemController
             $dbData = [
                 'company_id' => $data['companyId'] ?? $currentCompanyId,
                 'project_name' => $data['projectName'] ?? '',
+                'project_code' => $data['projectCode'] ?? '',
                 'category_id' => $data['categoryId'] ?? 0,
                 'original_price' => $data['originalPrice'] ?? 0,
                 'single_sale_price' => $data['singleSalePrice'] ?? 0,
@@ -560,6 +562,7 @@ class CardItemController
             // 转换字段名：camelCase 转 snake_case
             $dbData = [
                 'project_name' => $data['projectName'] ?? $project->project_name,
+                'project_code' => $data['projectCode'] ?? $project->project_code,
                 'category_id' => $data['categoryId'] ?? $project->category_id,
                 'original_price' => $data['originalPrice'] ?? $project->original_price,
                 'single_sale_price' => $data['singleSalePrice'] ?? $project->single_sale_price,
@@ -2193,6 +2196,7 @@ class CardItemController
                     'noDiscount' => $product->no_discount ?? 0,
                     'allowGift' => $product->allow_gift ?? 0,
                     'noConsumption' => $product->no_consumption ?? 0,
+                    'noModify' => $product->no_modify ?? 0,
                     'isCooperative' => $product->is_cooperative ?? 0,
                     'isYm' => $product->is_ym ?? 0,
                     'isSpecial' => $product->is_special ?? 0,
@@ -2254,6 +2258,7 @@ class CardItemController
                 'no_discount' => $data['noDiscount'] ?? 0,
                 'allow_gift' => $data['allowGift'] ?? 0,
                 'no_consumption' => $data['noConsumption'] ?? 0,
+                'no_modify' => $data['noModify'] ?? 0,
                 'is_cooperative' => $data['isCooperative'] ?? 0,
                 'is_ym' => $data['isYm'] ?? 0,
                 'is_special' => $data['isSpecial'] ?? 0,
@@ -2322,6 +2327,7 @@ class CardItemController
                 'no_discount' => $data['noDiscount'] ?? 0,
                 'allow_gift' => $data['allowGift'] ?? 0,
                 'no_consumption' => $data['noConsumption'] ?? 0,
+                'no_modify' => $data['noModify'] ?? 0,
                 'is_cooperative' => $data['isCooperative'] ?? 0,
                 'is_ym' => $data['isYm'] ?? 0,
                 'is_special' => $data['isSpecial'] ?? 0,
