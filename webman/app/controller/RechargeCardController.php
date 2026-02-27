@@ -28,9 +28,12 @@ class RechargeCardController
             }
             
             // 应用搜索条件
-            $cardName = $request->get('cardName');
-            if ($cardName) {
-                $query->where('card_name', 'like', '%' . $cardName . '%');
+            $keyword = $request->get('keyword');
+            if ($keyword) {
+                $query->where(function($q) use ($keyword) {
+                    $q->where('card_name', 'like', '%' . $keyword . '%')
+                      ->orWhere('card_code', 'like', '%' . $keyword . '%');
+                });
             }
             
             // 移除对不存在的department_id字段的引用
@@ -195,11 +198,17 @@ class RechargeCardController
                 `product_id` int(11) NOT NULL,
                 `times` int(11) NOT NULL,
                 `unit_price` decimal(10,2) NOT NULL,
+                `total_price` decimal(10,2) NOT NULL DEFAULT 0.00,
                 `manual_salary` decimal(10,2) NOT NULL,
                 PRIMARY KEY (`id`),
                 KEY `recharge_id` (`recharge_id`),
                 KEY `product_id` (`product_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+            // 添加 total_price 字段（如果不存在）
+            $columnExists = DB::select("SHOW COLUMNS FROM `card_recharge_gift_product` LIKE 'total_price'");
+            if (empty($columnExists)) {
+                DB::statement('ALTER TABLE `card_recharge_gift_product` ADD COLUMN `total_price` decimal(10,2) NOT NULL DEFAULT 0.00 AFTER `unit_price`');
+            }
             $giftProductRecords = DB::table('card_recharge_gift_product')
                 ->where('recharge_id', $id)
                 ->get();
@@ -215,7 +224,7 @@ class RechargeCardController
                     'productName' => $productName,
                     'times' => $record->times,
                     'unitPrice' => $record->unit_price,
-                    'totalPrice' => $record->times * $record->unit_price,
+                    'totalPrice' => $record->total_price ?? ($record->times * $record->unit_price),
                     'manualSalary' => $record->manual_salary
                 ];
             }
@@ -452,24 +461,27 @@ class RechargeCardController
                     `product_id` int(11) NOT NULL,
                     `times` int(11) NOT NULL,
                     `unit_price` decimal(10,2) NOT NULL,
+                    `total_price` decimal(10,2) NOT NULL DEFAULT 0.00,
                     `manual_salary` decimal(10,2) NOT NULL,
                     PRIMARY KEY (`id`),
                     KEY `recharge_id` (`recharge_id`),
                     KEY `product_id` (`product_id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+                // 添加 total_price 字段（如果不存在）
+                $columnExists = DB::select("SHOW COLUMNS FROM `card_recharge_gift_product` LIKE 'total_price'");
+                if (empty($columnExists)) {
+                    DB::statement('ALTER TABLE `card_recharge_gift_product` ADD COLUMN `total_price` decimal(10,2) NOT NULL DEFAULT 0.00 AFTER `unit_price`');
+                }
                 
                 foreach ($data['giftProducts'] as $product) {
                     // 检查必要字段是否存在
                     if (!empty($product['productId']) && !empty($product['times']) && !empty($product['unitPrice']) && !empty($product['manualSalary'])) {
-                        // 计算总价，如果没有提供则根据times和unitPrice计算
-                        $totalPrice = isset($product['totalPrice']) ? $product['totalPrice'] : ($product['times'] * $product['unitPrice']);
-                        
                         DB::table('card_recharge_gift_product')->insert([
                             'recharge_id' => $id,
                             'product_id' => $product['productId'],
                             'times' => $product['times'],
                             'unit_price' => $product['unitPrice'],
-                            'total_price' => $totalPrice,
+                            'total_price' => $product['totalPrice'] ?? ($product['times'] * $product['unitPrice']),
                             'manual_salary' => $product['manualSalary']
                         ]);
                     } else {
@@ -701,25 +713,28 @@ class RechargeCardController
                 `product_id` int(11) NOT NULL,
                 `times` int(11) NOT NULL,
                 `unit_price` decimal(10,2) NOT NULL,
+                `total_price` decimal(10,2) NOT NULL DEFAULT 0.00,
                 `manual_salary` decimal(10,2) NOT NULL,
                 PRIMARY KEY (`id`),
                 KEY `recharge_id` (`recharge_id`),
                 KEY `product_id` (`product_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+            // 添加 total_price 字段（如果不存在）
+            $columnExists = DB::select("SHOW COLUMNS FROM `card_recharge_gift_product` LIKE 'total_price'");
+            if (empty($columnExists)) {
+                DB::statement('ALTER TABLE `card_recharge_gift_product` ADD COLUMN `total_price` decimal(10,2) NOT NULL DEFAULT 0.00 AFTER `unit_price`');
+            }
             DB::table('card_recharge_gift_product')->where('recharge_id', $id)->delete();
             
             // 处理包含产品
             if (!empty($data['giftProducts'])) {
                 foreach ($data['giftProducts'] as $product) {
-                    // 计算总价，如果没有提供则根据times和unitPrice计算
-                    $totalPrice = isset($product['totalPrice']) ? $product['totalPrice'] : ($product['times'] * $product['unitPrice']);
-                    
                     DB::table('card_recharge_gift_product')->insert([
                         'recharge_id' => $id,
                         'product_id' => $product['productId'],
                         'times' => $product['times'],
                         'unit_price' => $product['unitPrice'],
-                        'total_price' => $totalPrice,
+                        'total_price' => $product['totalPrice'] ?? ($product['times'] * $product['unitPrice']),
                         'manual_salary' => $product['manualSalary']
                     ]);
                 }

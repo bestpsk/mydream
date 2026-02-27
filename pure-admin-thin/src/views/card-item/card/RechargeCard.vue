@@ -33,7 +33,22 @@
   <div class="recharge-card">
     <!-- 标题和操作按钮区域 -->
     <div class="mb-4 flex justify-between items-center">
-      <span class="text-lg font-medium">充值卡管理</span>
+      <div class="flex items-center space-x-4">
+        <span class="text-lg font-medium">充值卡管理</span>
+        <el-input
+          v-model="searchKeyword"
+          placeholder="搜索卡名称/卡编码"
+          prefix-icon="Search"
+          clearable
+          style="width: 220px"
+          @clear="handleSearch"
+          @keyup.enter="handleSearch"
+        />
+        <el-button type="primary" @click="handleSearch">
+          <el-icon><Search /></el-icon>
+          搜索
+        </el-button>
+      </div>
       <!-- 新增充值卡按钮 -->
       <el-button type="primary" @click="handleAdd">
         <el-icon><Plus /></el-icon>
@@ -43,29 +58,30 @@
     <!-- 充值卡数据表格 -->
     <div class="flex-1 min-h-0">
       <el-table v-loading="loading" :data="list" style="width: 100%" class="h-full" :max-height="`calc(100vh - 320px)`">
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="cardName" label="充值卡名称" min-width="150" />
-        <el-table-column label="充值金额/赠送金额" width="180">
+        <el-table-column prop="id" label="ID" width="70" />
+        <el-table-column prop="cardName" label="充值卡名称" min-width="120" />
+        <el-table-column prop="cardCode" label="卡编码" min-width="100" />
+        <el-table-column label="充值金额/赠送金额" min-width="150">
           <template #default="scope">
             {{ scope.row.amount }} / {{ scope.row.giftAmount }}
           </template>
         </el-table-column>
-        <el-table-column label="项目折扣/产品折扣" width="180">
+        <el-table-column label="项目折扣/产品折扣" min-width="160">
           <template #default="scope">
             {{ scope.row.projectDiscount }}% ({{ (scope.row.projectDiscount / 10).toFixed(1) }}折) / {{ scope.row.productDiscount }}% ({{ (scope.row.productDiscount / 10).toFixed(1) }}折)
           </template>
         </el-table-column>
-        <el-table-column label="耗卡率" width="100">
+        <el-table-column label="耗卡率" min-width="80">
           <template #default="scope">
             {{ scope.row.consumeRate }}%
           </template>
         </el-table-column>
-        <el-table-column prop="expireType" label="过期类型" width="120">
+        <el-table-column prop="expireType" label="过期类型" min-width="100">
           <template #default="scope">
             {{ expireTypeMap[scope.row.expireType] || scope.row.expireType }}
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="120">
+        <el-table-column label="状态" min-width="80">
           <template #default="scope">
             <el-switch
               v-model="scope.row.status"
@@ -117,7 +133,10 @@
           <el-tab-pane label="基本信息" name="basic">
             <el-form :model="formData" label-width="120px">
               <el-form-item label="充值卡名称" prop="cardName">
-                <el-input v-model="formData.cardName" placeholder="请输入充值卡名称" :disabled="isModificationDisabled" />
+                <el-input v-model="formData.cardName" placeholder="请输入充值卡名称" :disabled="isModificationDisabled" @input="generateCardCode" />
+              </el-form-item>
+              <el-form-item label="充值卡编码" prop="cardCode">
+                <el-input v-model="formData.cardCode" placeholder="请输入卡编码（默认自动生成）" :disabled="isModificationDisabled" />
               </el-form-item>
               <div class="flex space-x-4">
                 <el-form-item label="充值金额" prop="amount" style="width: 48%">
@@ -370,7 +389,7 @@
                     <el-input v-model.number="scope.row.manualSalary" type="number" size="small" style="width: 100%" placeholder="0.00" :disabled="isModificationDisabled" />
                   </template>
                 </el-table-column>
-                <el-table-column label="操作" width="60" fixed="right">
+                <el-table-column label="操作" width="65" fixed="right">
                   <template #default="scope">
                     <el-button size="small" type="danger" @click="handleDeleteIncludeProject(scope.$index)" :disabled="isModificationDisabled">
                       <el-icon><Delete /></el-icon>
@@ -411,17 +430,17 @@
                 </el-table-column>
                 <el-table-column prop="times" label="数量*" width="90">
                   <template #default="scope">
-                    <el-input v-model.number="scope.row.times" type="number" size="small" style="width: 100%" placeholder="1" :disabled="isModificationDisabled" />
+                    <el-input v-model.number="scope.row.times" type="number" size="small" style="width: 100%" placeholder="1" :disabled="isModificationDisabled" @input="updateProductTotalPrice(scope.$index)" />
                   </template>
                 </el-table-column>
                 <el-table-column prop="unitPrice" label="单价*" width="100">
                   <template #default="scope">
-                    <el-input v-model.number="scope.row.unitPrice" type="number" size="small" style="width: 100%" placeholder="0.00" :disabled="isModificationDisabled" />
+                    <el-input v-model.number="scope.row.unitPrice" type="number" size="small" style="width: 100%" placeholder="0.00" :disabled="isModificationDisabled" @input="updateProductTotalPrice(scope.$index)" />
                   </template>
                 </el-table-column>
                 <el-table-column prop="totalPrice" label="总价" width="100">
                   <template #default="scope">
-                    {{ (scope.row.times * scope.row.unitPrice).toFixed(2) }}
+                    <el-input v-model.number="scope.row.totalPrice" type="number" size="small" style="width: 100%" placeholder="0.00" :disabled="isModificationDisabled" @input="updateProductUnitPrice(scope.$index)" />
                   </template>
                 </el-table-column>
                 <el-table-column prop="manualSalary" label="手工*" width="100">
@@ -429,7 +448,7 @@
                     <el-input v-model.number="scope.row.manualSalary" type="number" size="small" style="width: 100%" placeholder="0.00" :disabled="isModificationDisabled" />
                   </template>
                 </el-table-column>
-                <el-table-column label="操作" width="60" fixed="right">
+                <el-table-column label="操作" width="65" fixed="right">
                   <template #default="scope">
                     <el-button size="small" type="danger" @click="handleDeleteIncludeProduct(scope.$index)" :disabled="isModificationDisabled">
                       <el-icon><Delete /></el-icon>
@@ -526,10 +545,10 @@
       </template>
     </el-dialog>
 
-    <!-- 添加/编辑配赠项目对话框 -->
+    <!-- 添加配赠项目对话框 -->
     <el-dialog
       v-model="giftProjectDialogVisible"
-      :title="giftProjectDialogTitle"
+      title="选择项目"
       width="900px"
       destroy-on-close
     >
@@ -545,63 +564,33 @@
         <div 
           v-for="project in filteredProjectList" 
           :key="project.id" 
-          class="project-card p-3 border rounded bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-          :class="{ 'border-blue-500 bg-blue-50': giftProjectForm.projectId === project.id }"
-          @click="selectProject(project)"
+          class="project-card p-2 border rounded bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+          :class="{ 'border-primary': selectedProjectIds.includes(project.id) }"
+          @click="toggleProjectSelection(project.id)"
         >
           <div class="flex items-center mb-1">
-            <div class="font-medium text-sm">{{ project.projectName }}</div>
+            <input type="checkbox" :value="project.id" v-model="selectedProjectIds" class="mr-2" @click.stop />
+            <div class="font-medium text-sm ml-2">{{ project.projectName }}</div>
             <el-tag v-if="project.supplierName" size="small" class="ml-2">{{ project.supplierName }}</el-tag>
           </div>
           <div class="flex flex-wrap gap-x-5 gap-y-0.5 text-xs text-gray-500">
-            <div>原价: {{ project.originalPrice || 0 }}元</div>
+            <div class="ml-5">原价: {{ project.originalPrice || 0 }}元</div>
             <div>售卖: {{ project.singleSalePrice || 0 }}元</div>
             <div>服务时长: {{ project.serviceTime || 0 }}分钟</div>
-            <div class="w-full mt-0.5 truncate" :title="project.remark || ''">备注: {{ project.remark || '' }}</div>
+            <div class="w-full mt-0.5 truncate ml-5" :title="project.remark || ''">备注: {{ project.remark || '' }}</div>
           </div>
         </div>
         <div v-if="filteredProjectList.length === 0" class="text-center text-gray-400 py-8">
           暂无匹配的项目
         </div>
       </div>
-      
-      <el-divider content-position="left" v-if="giftProjectForm.projectId">项目设置</el-divider>
-      
-      <el-form
-        v-if="giftProjectForm.projectId"
-        ref="giftProjectFormRef"
-        :model="giftProjectForm"
-        :rules="giftProjectRules"
-        label-width="100px"
-        class="mt-4"
-      >
-        <div class="grid grid-cols-3 gap-4">
-          <el-form-item label="次数" prop="times">
-            <el-input-number v-model="giftProjectForm.times" :min="1" :step="1" @change="calculateTotalPrice" style="width: 100%" />
-          </el-form-item>
-          <el-form-item label="单价" prop="unitPrice">
-            <el-input-number v-model="giftProjectForm.unitPrice" :min="0" :step="0.01" :precision="2" @change="calculateTotalPrice" style="width: 100%" />
-          </el-form-item>
-          <el-form-item label="总价" prop="totalPrice">
-            <el-input-number v-model="giftProjectForm.totalPrice" :min="0" :step="0.01" :precision="2" @change="calculateUnitPrice" style="width: 100%" />
-          </el-form-item>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <el-form-item label="耗卡" prop="consume">
-            <el-input-number v-model="giftProjectForm.consume" :min="0" :step="1" style="width: 100%" />
-          </el-form-item>
-          <el-form-item label="手工工资" prop="manualSalary">
-            <el-input-number v-model="giftProjectForm.manualSalary" :min="0" :step="0.01" :precision="2" style="width: 100%" />
-          </el-form-item>
-        </div>
-      </el-form>
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="giftProjectDialogVisible = false">
             <el-icon><Close /></el-icon>
             取消
           </el-button>
-          <el-button type="primary" @click="handleSubmitGiftProject" :disabled="!giftProjectForm.projectId">
+          <el-button type="primary" @click="handleProjectSelectConfirm">
             <el-icon><Check /></el-icon>
             确定
           </el-button>
@@ -609,49 +598,51 @@
       </template>
     </el-dialog>
 
-    <!-- 添加/编辑配赠产品对话框 -->
+    <!-- 添加配赠产品对话框 -->
     <el-dialog
       v-model="giftProductDialogVisible"
-      :title="giftProductDialogTitle"
-      width="600px"
+      title="选择产品"
+      width="900px"
       destroy-on-close
     >
-      <el-form
-        ref="giftProductFormRef"
-        :model="giftProductForm"
-        :rules="giftProductRules"
-        label-width="100px"
-      >
-        <el-form-item label="产品名称" prop="productId">
-          <el-select v-model="giftProductForm.productId" placeholder="请选择产品" class="w-full">
-            <el-option
-              v-for="product in productList"
-              :key="product.id"
-              :label="product.productName"
-              :value="product.id"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="次数" prop="times">
-          <el-input-number v-model="giftProductForm.times" :min="1" :step="1" />
-        </el-form-item>
-        <el-form-item label="单价" prop="unitPrice">
-          <el-input-number v-model="giftProductForm.unitPrice" :min="0" :step="0.01" :precision="2" />
-        </el-form-item>
-        <el-form-item label="耗卡" prop="consume">
-          <el-input-number v-model="giftProductForm.consume" :min="0" :max="100" :step="1" />
-        </el-form-item>
-        <el-form-item label="手工工资" prop="manualSalary">
-          <el-input-number v-model="giftProductForm.manualSalary" :min="0" :step="0.01" :precision="2" />
-        </el-form-item>
-      </el-form>
+      <div class="mb-4">
+        <el-input
+          v-model="productSearchKeyword"
+          placeholder="请输入产品名称搜索"
+          prefix-icon="Search"
+          clearable
+        />
+      </div>
+      <div class="space-y-2 max-h-96 overflow-y-auto">
+        <div 
+          v-for="product in filteredProductList" 
+          :key="product.id" 
+          class="product-card p-2 border rounded bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+          :class="{ 'border-primary': selectedProductIds.includes(product.id) }"
+          @click="toggleProductSelection(product.id)"
+        >
+          <div class="flex items-center mb-1">
+            <input type="checkbox" :value="product.id" v-model="selectedProductIds" class="mr-2" @click.stop />
+            <div class="font-medium text-sm ml-2">{{ product.productName }}</div>
+            <el-tag v-if="product.supplierName" size="small" class="ml-2">{{ product.supplierName }}</el-tag>
+          </div>
+          <div class="flex flex-wrap gap-x-5 gap-y-0.5 text-xs text-gray-500">
+            <div class="ml-5">原价: {{ product.originalPrice || 0 }}元</div>
+            <div>售卖: {{ product.salePrice || 0 }}元</div>
+            <div class="w-full mt-0.5 truncate ml-5" :title="product.remark || ''">备注: {{ product.remark || '' }}</div>
+          </div>
+        </div>
+        <div v-if="filteredProductList.length === 0" class="text-center text-gray-400 py-8">
+          暂无匹配的产品
+        </div>
+      </div>
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="giftProductDialogVisible = false">
             <el-icon><Close /></el-icon>
             取消
           </el-button>
-          <el-button type="primary" @click="handleSubmitGiftProduct">
+          <el-button type="primary" @click="handleProductSelectConfirm">
             <el-icon><Check /></el-icon>
             确定
           </el-button>
@@ -672,8 +663,9 @@
  * 4. 配赠产品管理 - 添加、删除配赠产品
  */
 import { ref, reactive, computed, onMounted } from "vue";
-import { Plus, Edit, Delete, Close, Check } from "@element-plus/icons-vue";
+import { Plus, Edit, Delete, Close, Check, Search } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { pinyin } from "pinyin-pro";
 import {
   getRechargeCardList,
   getRechargeCardDetail,
@@ -716,12 +708,6 @@ const giftProductDialogVisible = ref(false);
 /** 主对话框标题 */
 const dialogTitle = ref('新增充值卡');
 
-/** 配赠项目对话框标题 */
-const giftProjectDialogTitle = ref('新增配赠项目');
-
-/** 配赠产品对话框标题 */
-const giftProductDialogTitle = ref('新增配赠产品');
-
 /** 当前激活的表单标签页 */
 const activeFormTab = ref("basic");
 
@@ -730,6 +716,9 @@ const formRef = ref<any>(null);
 
 /** 项目搜索关键词 */
 const projectSearchKeyword = ref('');
+
+/** 产品搜索关键词 */
+const productSearchKeyword = ref('');
 
 /** 配赠项目表单引用 */
 const giftProjectFormRef = ref<any>(null);
@@ -778,6 +767,9 @@ const pagination = reactive({
   total: 0
 });
 
+/** 搜索关键词 */
+const searchKeyword = ref('');
+
 /** 充值卡列表数据 */
 const list = ref<any[]>([]);
 
@@ -785,6 +777,7 @@ const list = ref<any[]>([]);
 const formData = reactive({
   id: '',
   cardName: '',
+  cardCode: '',
   amount: 0,
   giftAmount: 0,
   projectDiscount: 100,
@@ -819,6 +812,12 @@ const giftProjectForm = reactive({
   manualSalary: 0
 });
 
+/** 选中的项目ID列表 */
+const selectedProjectIds = ref<any[]>([]);
+
+/** 选中的产品ID列表 */
+const selectedProductIds = ref<any[]>([]);
+
 /** 配赠产品表单数据 */
 const giftProductForm = reactive({
   id: '',
@@ -826,6 +825,7 @@ const giftProductForm = reactive({
   productId: '',
   times: 1,
   unitPrice: 0,
+  totalPrice: 0,
   consume: 0,
   manualSalary: 0
 });
@@ -847,11 +847,24 @@ const filteredProjectList = computed(() => {
   );
 });
 
+/** 过滤后的产品列表 - 根据搜索关键词过滤 */
+const filteredProductList = computed(() => {
+  if (!productSearchKeyword.value) {
+    return props.productList;
+  }
+  const keyword = productSearchKeyword.value.toLowerCase();
+  return props.productList.filter((product: any) => 
+    product.productName?.toLowerCase().includes(keyword) ||
+    product.supplierName?.toLowerCase().includes(keyword)
+  );
+});
+
 // ==================== 表单验证规则 ====================
 
 /** 主表单验证规则 */
 const rules = reactive({
   cardName: [{ required: true, message: '请输入充值卡名称', trigger: ['blur', 'change'] }],
+  cardCode: [{ required: true, message: '请输入充值卡编码', trigger: ['blur', 'change'] }],
   amount: [
     { required: true, message: '请输入充值金额', trigger: ['blur', 'change'] },
     { type: 'number', min: 0.01, message: '充值金额必须大于0', trigger: ['blur', 'change'] }
@@ -883,6 +896,25 @@ const giftProductRules = reactive({
   times: [{ required: true, message: '请输入次数', trigger: 'blur' }]
 });
 
+const generateCardCode = () => {
+  if (formData.cardName) {
+    const name = formData.cardName;
+    let code = "";
+    for (const char of name) {
+      const codePoint = char.codePointAt(0);
+      if (codePoint >= 65 && codePoint <= 90) {
+        code += char;
+      } else if (codePoint >= 97 && codePoint <= 122) {
+        code += char.toUpperCase();
+      } else if (codePoint >= 0x4e00 && codePoint <= 0x9fff) {
+        const py = pinyin(char, { pattern: "first", toneType: "none" });
+        code += py.toUpperCase();
+      }
+    }
+    formData.cardCode = code.substring(0, 10);
+  }
+};
+
 // ==================== 生命周期 ====================
 
 /** 组件挂载时加载列表数据 */
@@ -899,10 +931,13 @@ onMounted(() => {
 const getList = async () => {
   loading.value = true;
   try {
-    const params = {
+    const params: any = {
       page: pagination.currentPage,
       pageSize: pagination.pageSize
     };
+    if (searchKeyword.value) {
+      params.keyword = searchKeyword.value;
+    }
     const response = await getRechargeCardList(params);
     if (response.code === 200) {
       list.value = response.data.map((item: any) => ({
@@ -919,6 +954,16 @@ const getList = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+// ==================== 搜索方法 ====================
+
+/**
+ * 处理搜索
+ */
+const handleSearch = () => {
+  pagination.currentPage = 1;
+  getList();
 };
 
 // ==================== 分页方法 ====================
@@ -949,6 +994,7 @@ const handleAdd = () => {
   Object.assign(formData, {
     id: '',
     cardName: '',
+    cardCode: '',
     amount: 0,
     giftAmount: 0,
     projectDiscount: 100,
@@ -960,10 +1006,10 @@ const handleAdd = () => {
     expireDate: '',
     expireMonths: 12,
     expireType: '3',
-    saleStoreIds: props.storeList.map(store => store.id),
-    consumeStoreIds: props.storeList.map(store => store.id),
-    saleDepartmentIds: props.departmentList.map(dept => dept.id),
-    consumeDepartmentIds: props.departmentList.map(dept => dept.id),
+    saleStoreIds: [],
+    consumeStoreIds: [],
+    saleDepartmentIds: [],
+    consumeDepartmentIds: [],
     giftProjects: [],
     giftProducts: [],
     description: '',
@@ -997,6 +1043,7 @@ const handleEdit = async (row: any) => {
       Object.assign(formData, {
         id: cardDetail.id,
         cardName: cardDetail.cardName,
+        cardCode: cardDetail.cardCode || '',
         amount: cardDetail.amount,
         giftAmount: cardDetail.giftAmount,
         projectDiscount: cardDetail.projectDiscount,
@@ -1128,211 +1175,90 @@ const handleGiftManage = (row: any) => {
   fetchGiftProducts(row.id);
 };
 
-const handleAddGiftProject = () => {
-  giftProjectDialogTitle.value = '新增配赠项目';
-  Object.assign(giftProjectForm, {
-    id: '',
-    projectId: '',
-    times: 1,
-    unitPrice: 0,
-    totalPrice: 0,
-    consume: 0,
-    manualSalary: 0
-  });
-  giftProjectDialogVisible.value = true;
-};
-
-const handleEditGiftProject = (row: any) => {
-  giftProjectDialogTitle.value = '编辑配赠项目';
-  Object.assign(giftProjectForm, {
-    id: row.id,
-    projectId: row.projectId,
-    times: row.times,
-    unitPrice: row.unitPrice,
-    totalPrice: row.times * row.unitPrice,
-    consume: row.consume,
-    manualSalary: row.manualSalary
-  });
-  giftProjectDialogVisible.value = true;
-};
-
-const handleSubmitGiftProject = async () => {
-  if (!giftProjectFormRef.value) return;
-  
-  try {
-    await giftProjectFormRef.value.validate();
-    
-    const selectedProject = props.projectList.find(p => p.id === giftProjectForm.projectId);
-    
-    formData.giftProjects.push({
-      id: giftProjectForm.id,
-      projectId: giftProjectForm.projectId,
-      projectName: selectedProject ? selectedProject.projectName : '',
-      times: giftProjectForm.times,
-      unitPrice: giftProjectForm.unitPrice,
-      totalPrice: giftProjectForm.totalPrice,
-      consume: giftProjectForm.consume,
-      manualSalary: giftProjectForm.manualSalary
-    });
-    
-    giftProjectDialogVisible.value = false;
-  } catch (error) {
-    console.error('操作失败:', error);
-    ElMessage.error('操作失败，请稍后重试');
-  }
-};
-
-const handleDeleteGiftProject = (id: string) => {
-  ElMessageBox.confirm('确定要删除这个配赠项目吗？', '警告', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(async () => {
-    try {
-      const response = await deleteGiftProject(id);
-      if (response.data.code === 200) {
-        ElMessage.success('删除成功');
-        fetchGiftProjects(giftProjectForm.rechargeId);
-      } else {
-        ElMessage.error(response.data.message || '删除失败');
-      }
-    } catch (error) {
-      console.error('删除失败:', error);
-      ElMessage.error('删除失败，请稍后重试');
-    }
-  }).catch(() => {});
-};
-
-const handleAddGiftProduct = () => {
-  giftProductDialogTitle.value = '新增配赠产品';
-  Object.assign(giftProductForm, {
-    id: '',
-    productId: '',
-    times: 1,
-    unitPrice: 0,
-    consume: 0,
-    manualSalary: 0
-  });
-  giftProductDialogVisible.value = true;
-};
-
-const handleEditGiftProduct = (row: any) => {
-  giftProductDialogTitle.value = '编辑配赠产品';
-  Object.assign(giftProductForm, {
-    id: row.id,
-    productId: row.productId,
-    times: row.times,
-    unitPrice: row.unitPrice,
-    consume: row.consume,
-    manualSalary: row.manualSalary
-  });
-  giftProductDialogVisible.value = true;
-};
-
-const selectProject = (project: any) => {
-  giftProjectForm.projectId = project.id;
-  giftProjectForm.unitPrice = project.singleSalePrice || 0;
-  calculateTotalPrice();
-};
-
-const calculateTotalPrice = () => {
-  const { times, unitPrice } = giftProjectForm;
-  giftProjectForm.totalPrice = times * unitPrice;
-};
-
-const calculateUnitPrice = () => {
-  const { times, totalPrice } = giftProjectForm;
-  if (times > 0) {
-    giftProjectForm.unitPrice = totalPrice / times;
-  }
-};
-
-const updateProjectTotalPrice = (index: number) => {
-  const project = formData.giftProjects[index];
-  if (project) {
-    project.totalPrice = project.times * project.unitPrice;
-  }
-};
-
-const updateProjectUnitPrice = (index: number) => {
-  const project = formData.giftProjects[index];
-  if (project && project.times > 0) {
-    project.unitPrice = project.totalPrice / project.times;
-  }
-};
-
-const handleSubmitGiftProduct = async () => {
-  if (!giftProductFormRef.value) return;
-  
-  try {
-    await giftProductFormRef.value.validate();
-    
-    const selectedProduct = props.productList.find(p => p.id === giftProductForm.productId);
-    
-    formData.giftProducts.push({
-      id: giftProductForm.id,
-      productId: giftProductForm.productId,
-      productName: selectedProduct ? selectedProduct.productName : '',
-      times: giftProductForm.times,
-      unitPrice: giftProductForm.unitPrice,
-      totalPrice: giftProductForm.times * giftProductForm.unitPrice,
-      manualSalary: giftProductForm.manualSalary
-    });
-    
-    giftProductDialogVisible.value = false;
-  } catch (error) {
-    console.error('操作失败:', error);
-    ElMessage.error('操作失败，请稍后重试');
-  }
-};
-
-const handleDeleteGiftProduct = (id: string) => {
-  ElMessageBox.confirm('确定要删除这个配赠产品吗？', '警告', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(async () => {
-    try {
-      const response = await deleteGiftProduct(id);
-      if (response.data.code === 200) {
-        ElMessage.success('删除成功');
-        fetchGiftProducts(giftProductForm.rechargeId);
-      } else {
-        ElMessage.error(response.data.message || '删除失败');
-      }
-    } catch (error) {
-      console.error('删除失败:', error);
-      ElMessage.error('删除失败，请稍后重试');
-    }
-  }).catch(() => {});
-};
-
 const handleAddIncludeProject = () => {
-  giftProjectForm.rechargeId = formData.id;
-  giftProjectDialogTitle.value = '添加包含项目';
-  Object.assign(giftProjectForm, {
-    id: '',
-    projectId: '',
-    times: 1,
-    unitPrice: 0,
-    consume: 0,
-    manualSalary: 0
-  });
+  selectedProjectIds.value = formData.giftProjects.map((p: any) => p.projectId);
+  projectSearchKeyword.value = '';
   giftProjectDialogVisible.value = true;
 };
 
 const handleAddIncludeProduct = () => {
-  giftProductForm.rechargeId = formData.id;
-  giftProductDialogTitle.value = '添加包含产品';
-  Object.assign(giftProductForm, {
-    id: '',
-    productId: '',
-    times: 1,
-    unitPrice: 0,
-    consume: 0,
-    manualSalary: 0
-  });
+  selectedProductIds.value = formData.giftProducts.map((p: any) => p.productId);
+  productSearchKeyword.value = '';
   giftProductDialogVisible.value = true;
+};
+
+const toggleProjectSelection = (projectId: number) => {
+  const index = selectedProjectIds.value.indexOf(projectId);
+  if (index > -1) {
+    selectedProjectIds.value.splice(index, 1);
+  } else {
+    selectedProjectIds.value.push(projectId);
+  }
+};
+
+const toggleProductSelection = (productId: number) => {
+  const index = selectedProductIds.value.indexOf(productId);
+  if (index > -1) {
+    selectedProductIds.value.splice(index, 1);
+  } else {
+    selectedProductIds.value.push(productId);
+  }
+};
+
+const handleProjectSelectConfirm = () => {
+  const existingIds = formData.giftProjects.map((p: any) => p.projectId);
+  
+  selectedProjectIds.value.forEach(projectId => {
+    if (!existingIds.includes(projectId)) {
+      const project = props.projectList.find((p: any) => p.id === projectId);
+      if (project) {
+        formData.giftProjects.push({
+          id: '',
+          projectId: project.id,
+          projectName: project.projectName,
+          times: 1,
+          unitPrice: project.singleSalePrice || 0,
+          totalPrice: project.singleSalePrice || 0,
+          consume: 0,
+          manualSalary: 0
+        });
+      }
+    }
+  });
+  
+  formData.giftProjects = formData.giftProjects.filter((p: any) => 
+    selectedProjectIds.value.includes(p.projectId)
+  );
+  
+  giftProjectDialogVisible.value = false;
+};
+
+const handleProductSelectConfirm = () => {
+  const existingIds = formData.giftProducts.map((p: any) => p.productId);
+  
+  selectedProductIds.value.forEach(productId => {
+    if (!existingIds.includes(productId)) {
+      const product = props.productList.find((p: any) => p.id === productId);
+      if (product) {
+        formData.giftProducts.push({
+          id: '',
+          productId: product.id,
+          productName: product.productName,
+          times: 1,
+          unitPrice: product.salePrice || 0,
+          totalPrice: product.salePrice || 0,
+          consume: 0,
+          manualSalary: 0
+        });
+      }
+    }
+  });
+  
+  formData.giftProducts = formData.giftProducts.filter((p: any) => 
+    selectedProductIds.value.includes(p.productId)
+  );
+  
+  giftProductDialogVisible.value = false;
 };
 
 const handleDeleteIncludeProject = (index: number) => {
@@ -1341,6 +1267,34 @@ const handleDeleteIncludeProject = (index: number) => {
 
 const handleDeleteIncludeProduct = (index: number) => {
   formData.giftProducts.splice(index, 1);
+};
+
+const updateProjectTotalPrice = (index: number) => {
+  const project = formData.giftProjects[index];
+  if (project) {
+    project.totalPrice = Number((project.times * project.unitPrice).toFixed(2));
+  }
+};
+
+const updateProjectUnitPrice = (index: number) => {
+  const project = formData.giftProjects[index];
+  if (project && project.times > 0) {
+    project.unitPrice = Number((project.totalPrice / project.times).toFixed(2));
+  }
+};
+
+const updateProductTotalPrice = (index: number) => {
+  const product = formData.giftProducts[index];
+  if (product) {
+    product.totalPrice = Number((product.times * product.unitPrice).toFixed(2));
+  }
+};
+
+const updateProductUnitPrice = (index: number) => {
+  const product = formData.giftProducts[index];
+  if (product && product.times > 0) {
+    product.unitPrice = Number((product.totalPrice / product.times).toFixed(2));
+  }
 };
 
 const handleProjectSelectionChange = (val: any[]) => {

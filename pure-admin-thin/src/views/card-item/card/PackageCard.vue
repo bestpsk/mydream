@@ -37,8 +37,8 @@
       <!-- 套餐卡搜索表单 -->
       <div class="search-bar flex-grow">
         <el-form :inline="true" :model="searchForm" class="w-full">
-          <el-form-item label="卡名称">
-            <el-input v-model="searchForm.cardName" placeholder="请输入卡名称" />
+          <el-form-item label="卡名称/编码">
+            <el-input v-model="searchForm.keyword" placeholder="请输入卡名称或编码" clearable />
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="handleSearch">
@@ -62,18 +62,18 @@
     <!-- 套餐卡数据表格 -->
     <div class="flex-1 min-h-0">
       <el-table v-loading="loading" :data="list" style="width: 100%" class="h-full" :max-height="`calc(100vh - 320px)`">
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="cardName" label="卡名称" />
-        <el-table-column prop="originalPrice" label="原价" width="100" />
-        <el-table-column prop="price" label="售价" width="100" />
-        <el-table-column prop="projectCount" label="包含项目数" width="100" />
-        <el-table-column prop="expireType" label="过期类型" width="120">
+        <el-table-column prop="id" label="ID" width="70" />
+        <el-table-column prop="cardName" label="卡名称" min-width="120" />
+        <el-table-column prop="originalPrice" label="原价" min-width="80" />
+        <el-table-column prop="price" label="售价" min-width="80" />
+        <el-table-column prop="projectCount" label="包含项目数" min-width="100" />
+        <el-table-column prop="expireType" label="过期类型" min-width="100">
           <template #default="scope">
             {{ expireTypeMap[scope.row.expireType] || scope.row.expireType }}
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" width="180" />
-        <el-table-column label="操作" width="180">
+        <el-table-column prop="createTime" label="创建时间" min-width="150" />
+        <el-table-column label="操作" width="160">
           <template #default="scope">
             <el-button v-if="hasAuth('card:package:edit')" type="primary" size="small" @click="handleEdit(scope.row)">
               <el-icon><Edit /></el-icon>
@@ -118,10 +118,10 @@
           <el-tab-pane label="基本信息" name="basic">
             <el-form :model="formData" label-width="120px">
               <el-form-item label="套餐卡名称" prop="cardName">
-                <el-input v-model="formData.cardName" placeholder="请输入套餐卡名称" :disabled="isModificationDisabled" />
+                <el-input v-model="formData.cardName" placeholder="请输入套餐卡名称" :disabled="isModificationDisabled" @input="generateCardCode" />
               </el-form-item>
               <el-form-item label="套餐卡编码" prop="cardCode">
-                <el-input v-model="formData.cardCode" placeholder="请输入套餐卡编码" :disabled="isModificationDisabled" />
+                <el-input v-model="formData.cardCode" placeholder="请输入卡编码（默认自动生成）" :disabled="isModificationDisabled" />
               </el-form-item>
               <div class="flex space-x-4">
                 <el-form-item label="原价" prop="originalPrice" style="width: 48%">
@@ -344,7 +344,7 @@
                     <el-input v-model.number="scope.row.manualSalary" type="number" size="small" style="width: 100%" placeholder="0.00" :disabled="isModificationDisabled" />
                   </template>
                 </el-table-column>
-                <el-table-column label="操作" width="60" fixed="right">
+                <el-table-column label="操作" width="65" fixed="right">
                   <template #default="scope">
                     <el-button size="small" type="danger" @click="handleDeleteIncludeProject(scope.$index)" :disabled="isModificationDisabled">
                       <el-icon><Delete /></el-icon>
@@ -385,17 +385,17 @@
                 </el-table-column>
                 <el-table-column prop="times" label="数量*" width="90">
                   <template #default="scope">
-                    <el-input v-model.number="scope.row.times" type="number" size="small" style="width: 100%" placeholder="1" :disabled="isModificationDisabled" />
+                    <el-input v-model.number="scope.row.times" type="number" size="small" style="width: 100%" placeholder="1" :disabled="isModificationDisabled" @input="updateProductTotalPrice(scope.$index)" />
                   </template>
                 </el-table-column>
                 <el-table-column prop="unitPrice" label="单价*" width="100">
                   <template #default="scope">
-                    <el-input v-model.number="scope.row.unitPrice" type="number" size="small" style="width: 100%" placeholder="0.00" :disabled="isModificationDisabled" />
+                    <el-input v-model.number="scope.row.unitPrice" type="number" size="small" style="width: 100%" placeholder="0.00" :disabled="isModificationDisabled" @input="updateProductTotalPrice(scope.$index)" />
                   </template>
                 </el-table-column>
                 <el-table-column prop="totalPrice" label="总价" width="100">
                   <template #default="scope">
-                    {{ (scope.row.times * scope.row.unitPrice).toFixed(2) }}
+                    <el-input v-model.number="scope.row.totalPrice" type="number" size="small" style="width: 100%" placeholder="0.00" :disabled="isModificationDisabled" @input="updateProductUnitPrice(scope.$index)" />
                   </template>
                 </el-table-column>
                 <el-table-column prop="manualSalary" label="手工*" width="100">
@@ -403,7 +403,7 @@
                     <el-input v-model.number="scope.row.manualSalary" type="number" size="small" style="width: 100%" placeholder="0.00" :disabled="isModificationDisabled" />
                   </template>
                 </el-table-column>
-                <el-table-column label="操作" width="60" fixed="right">
+                <el-table-column label="操作" width="65" fixed="right">
                   <template #default="scope">
                     <el-button size="small" type="danger" @click="handleDeleteIncludeProduct(scope.$index)" :disabled="isModificationDisabled">
                       <el-icon><Delete /></el-icon>
@@ -550,10 +550,12 @@
         <div 
           v-for="project in filteredProjectList" 
           :key="project.id" 
-          class="project-card p-2 border rounded bg-white shadow-sm hover:shadow-md transition-shadow"
+          class="project-card p-2 border rounded bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+          :class="{ 'border-primary': selectedProjectIds.includes(project.id) }"
+          @click="toggleProjectSelection(project.id)"
         >
           <div class="flex items-center mb-1">
-            <input type="checkbox" :value="project.id" v-model="selectedProjectIds" class="mr-2" />
+            <input type="checkbox" :value="project.id" v-model="selectedProjectIds" class="mr-2" @click.stop />
             <div class="font-medium text-sm ml-2">{{ project.projectName }}</div>
             <el-tag v-if="project.supplierName" size="small" class="ml-2">{{ project.supplierName }}</el-tag>
           </div>
@@ -600,16 +602,19 @@
         <div 
           v-for="product in filteredProductList" 
           :key="product.id" 
-          class="product-card p-2 border rounded bg-white shadow-sm hover:shadow-md transition-shadow"
+          class="product-card p-2 border rounded bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+          :class="{ 'border-primary': selectedProductIds.includes(product.id) }"
+          @click="toggleProductSelection(product.id)"
         >
           <div class="flex items-center mb-1">
-            <input type="checkbox" :value="product.id" v-model="selectedProductIds" class="mr-2" />
-            <div class="font-medium text-sm">{{ product.productName }}</div>
+            <input type="checkbox" :value="product.id" v-model="selectedProductIds" class="mr-2" @click.stop />
+            <div class="font-medium text-sm ml-2">{{ product.productName }}</div>
+            <el-tag v-if="product.supplierName" size="small" class="ml-2">{{ product.supplierName }}</el-tag>
           </div>
-          <div class="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-gray-500">
-            <div>原价: {{ product.originalPrice || 0 }}元</div>
+          <div class="flex flex-wrap gap-x-5 gap-y-0.5 text-xs text-gray-500">
+            <div class="ml-5">原价: {{ product.originalPrice || 0 }}元</div>
             <div>售卖: {{ product.salePrice || 0 }}元</div>
-            <div class="w-full mt-0.5 truncate" :title="product.remark || ''">备注: {{ product.remark || '' }}</div>
+            <div class="w-full mt-0.5 truncate ml-5" :title="product.remark || ''">备注: {{ product.remark || '' }}</div>
           </div>
         </div>
         <div v-if="filteredProductList.length === 0" class="text-center text-gray-400 py-8">
@@ -646,6 +651,7 @@ import { ref, reactive, computed, onMounted } from "vue";
 import { Plus, Edit, Delete, Search, Refresh, Close, Check } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { hasAuth } from "@/router/utils";
+import { pinyin } from "pinyin-pro";
 import {
   getPackageCards,
   getPackageCardDetail,
@@ -746,6 +752,24 @@ const filteredProductList = computed(() => {
   );
 });
 
+const toggleProjectSelection = (projectId: number) => {
+  const index = selectedProjectIds.value.indexOf(projectId);
+  if (index > -1) {
+    selectedProjectIds.value.splice(index, 1);
+  } else {
+    selectedProjectIds.value.push(projectId);
+  }
+};
+
+const toggleProductSelection = (productId: number) => {
+  const index = selectedProductIds.value.indexOf(productId);
+  if (index > -1) {
+    selectedProductIds.value.splice(index, 1);
+  } else {
+    selectedProductIds.value.push(productId);
+  }
+};
+
 /** 过期类型映射表 */
 const expireTypeMap: Record<string | number, string> = {
   '1': '开卡计算过期',
@@ -770,7 +794,7 @@ const dialogWidth = computed(() => {
 
 /** 搜索表单数据 */
 const searchForm = reactive({
-  cardName: ""
+  keyword: ""
 });
 
 /** 分页信息 */
@@ -857,6 +881,25 @@ const giftProductRules = reactive({
   times: [{ required: true, message: '请输入数量', trigger: 'blur' }]
 });
 
+const generateCardCode = () => {
+  if (formData.cardName) {
+    const name = formData.cardName;
+    let code = "";
+    for (const char of name) {
+      const codePoint = char.codePointAt(0);
+      if (codePoint >= 65 && codePoint <= 90) {
+        code += char;
+      } else if (codePoint >= 97 && codePoint <= 122) {
+        code += char.toUpperCase();
+      } else if (codePoint >= 0x4e00 && codePoint <= 0x9fff) {
+        const py = pinyin(char, { pattern: "first", toneType: "none" });
+        code += py.toUpperCase();
+      }
+    }
+    formData.cardCode = code.substring(0, 10);
+  }
+};
+
 // ==================== 生命周期 ====================
 
 /** 组件挂载时加载列表数据 */
@@ -873,11 +916,13 @@ onMounted(() => {
 const getList = async () => {
   loading.value = true;
   try {
-    const params = {
+    const params: any = {
       page: pagination.current,
-      pageSize: pagination.pageSize,
-      cardName: searchForm.cardName
+      pageSize: pagination.pageSize
     };
+    if (searchForm.keyword) {
+      params.keyword = searchForm.keyword;
+    }
     const response = await getPackageCards(params);
     if (response.code === 200) {
       list.value = response.data;
@@ -903,7 +948,7 @@ const handleSearch = () => {
 
 /** 重置搜索条件 */
 const resetSearch = () => {
-  searchForm.cardName = "";
+  searchForm.keyword = "";
   pagination.current = 1;
   getList();
 };
@@ -944,10 +989,10 @@ const handleAdd = () => {
     expireDate: '',
     expireMonths: 12,
     expireType: '3',
-    saleStoreIds: props.storeList.map(store => store.id),
-    consumeStoreIds: props.storeList.map(store => store.id),
-    saleDepartmentIds: props.departmentList.map(dept => dept.id),
-    consumeDepartmentIds: props.departmentList.map(dept => dept.id),
+    saleStoreIds: [],
+    consumeStoreIds: [],
+    saleDepartmentIds: [],
+    consumeDepartmentIds: [],
     giftProjects: [],
     giftProducts: [],
     description: '',
@@ -1204,7 +1249,7 @@ const calculateProjectUnitPrice = () => {
 const updateProjectTotalPrice = (index: number) => {
   const project = formData.giftProjects[index];
   if (project) {
-    project.totalPrice = project.times * project.unitPrice;
+    project.totalPrice = Number((project.times * project.unitPrice).toFixed(2));
   }
 };
 
@@ -1215,7 +1260,29 @@ const updateProjectTotalPrice = (index: number) => {
 const updateProjectUnitPrice = (index: number) => {
   const project = formData.giftProjects[index];
   if (project && project.times > 0) {
-    project.unitPrice = project.totalPrice / project.times;
+    project.unitPrice = Number((project.totalPrice / project.times).toFixed(2));
+  }
+};
+
+/**
+ * 更新表格中产品的总价
+ * @param index - 产品索引
+ */
+const updateProductTotalPrice = (index: number) => {
+  const product = formData.giftProducts[index];
+  if (product) {
+    product.totalPrice = Number((product.times * product.unitPrice).toFixed(2));
+  }
+};
+
+/**
+ * 更新表格中产品的单价
+ * @param index - 产品索引
+ */
+const updateProductUnitPrice = (index: number) => {
+  const product = formData.giftProducts[index];
+  if (product && product.times > 0) {
+    product.unitPrice = Number((product.totalPrice / product.times).toFixed(2));
   }
 };
 

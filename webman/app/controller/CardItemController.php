@@ -841,9 +841,12 @@ class CardItemController
             }
             
             // 应用搜索条件
-            $cardName = $request->get('cardName');
-            if ($cardName) {
-                $query->where('card_name', 'like', '%' . $cardName . '%');
+            $keyword = $request->get('keyword');
+            if ($keyword) {
+                $query->where(function($q) use ($keyword) {
+                    $q->where('card_name', 'like', '%' . $keyword . '%')
+                      ->orWhere('card_code', 'like', '%' . $keyword . '%');
+                });
             }
             
             // 执行查询
@@ -1945,42 +1948,188 @@ class CardItemController
     public function getTimeCards(Request $request)
     {
         try {
-            // 检查用户权限
             $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
             $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
             
-            // 构建查询
             $query = DB::table('card_time')->where('isDelete', 0);
             
-            // 非超级管理员只能查看自己公司的时效卡
             if (!$isSuper && $currentCompanyId) {
                 $query->where('company_id', $currentCompanyId);
             }
             
-            // 应用搜索条件
-            $cardName = $request->get('cardName');
-            if ($cardName) {
-                $query->where('card_name', 'like', '%' . $cardName . '%');
+            $keyword = $request->get('keyword');
+            if ($keyword) {
+                $query->where(function($q) use ($keyword) {
+                    $q->where('card_name', 'like', '%' . $keyword . '%')
+                      ->orWhere('card_code', 'like', '%' . $keyword . '%');
+                });
             }
             
-            // 执行查询
-            $cards = $query->get();
+            $status = $request->get('status');
+            if ($status !== null) {
+                $query->where('status', $status);
+            }
             
-            // 转换字段名：数据库字段名 转 camelCase
+            $cards = $query->orderBy('created_at', 'desc')->get();
+            
             $formattedCards = $cards->map(function($card) {
+                $useRuleText = '不限次数';
+                if ($card->use_rule_type == 2) {
+                    $useRuleText = '限' . $card->max_use_count . '次';
+                } elseif ($card->use_rule_type == 3) {
+                    $intervalText = $card->interval_hours . '小时';
+                    if ($card->interval_hours == 24) $intervalText = '每天1次';
+                    elseif ($card->interval_hours == 72) $intervalText = '每3天1次';
+                    elseif ($card->interval_hours == 168) $intervalText = '每周1次';
+                    $useRuleText = '限频率(' . $intervalText . ')';
+                }
+                
+                $projectBindText = '单选项目';
+                if ($card->project_bind_type == 2) $projectBindText = '多选项目';
+                elseif ($card->project_bind_type == 3) $projectBindText = '全店通用';
+                
                 return [
                     'id' => $card->id,
                     'cardName' => $card->card_name,
-                    'validDays' => $card->valid_days,
+                    'cardCode' => $card->card_code,
+                    'originalPrice' => $card->original_price,
                     'price' => $card->price,
+                    'validDays' => $card->valid_days,
+                    'validType' => $card->valid_type,
+                    'useRuleType' => $card->use_rule_type,
+                    'useRuleText' => $useRuleText,
+                    'maxUseCount' => $card->max_use_count,
+                    'intervalHours' => $card->interval_hours,
+                    'projectBindType' => $card->project_bind_type,
+                    'projectBindText' => $projectBindText,
+                    'customerCount' => $card->customer_count,
+                    'description' => $card->description,
+                    'remark' => $card->remark,
+                    'status' => $card->status,
+                    'onlineTime' => $card->online_time,
+                    'offlineTime' => $card->offline_time,
+                    'saleStoreIds' => $card->sale_store_ids ? json_decode($card->sale_store_ids) : [],
+                    'consumeStoreIds' => $card->consume_store_ids ? json_decode($card->consume_store_ids) : [],
+                    'saleDepartmentIds' => $card->sale_department_ids ? json_decode($card->sale_department_ids) : [],
+                    'consumeDepartmentIds' => $card->consume_department_ids ? json_decode($card->consume_department_ids) : [],
+                    'isModifiable' => $card->is_modifiable,
                     'createTime' => $card->created_at
                 ];
             });
             return json(['code' => 200, 'message' => '获取时效卡列表成功', 'data' => $formattedCards]);
         } catch (\Exception $e) {
-            // 记录错误日志
             error_log('Get time cards error: ' . $e->getMessage());
             return json(['code' => 500, 'message' => '获取时效卡列表失败，请稍后重试']);
+        }
+    }
+    
+    /**
+     * 获取时效卡详情
+     * @param Request $request 请求对象
+     * @param int $id 时效卡ID
+     * @return array 时效卡详情数据
+     */
+    public function getTimeCardDetail(Request $request, $id)
+    {
+        try {
+            $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
+            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
+            
+            $query = DB::table('card_time')->where('id', $id)->where('isDelete', 0);
+            
+            if (!$isSuper && $currentCompanyId) {
+                $query->where('company_id', $currentCompanyId);
+            }
+            
+            $card = $query->first();
+            if (!$card) {
+                return json(['code' => 404, 'message' => '时效卡不存在']);
+            }
+            
+            $formattedCard = [
+                'id' => $card->id,
+                'cardName' => $card->card_name,
+                'cardCode' => $card->card_code,
+                'originalPrice' => $card->original_price,
+                'price' => $card->price,
+                'validDays' => $card->valid_days,
+                'validType' => $card->valid_type,
+                'useRuleType' => $card->use_rule_type,
+                'maxUseCount' => $card->max_use_count,
+                'intervalHours' => $card->interval_hours,
+                'projectBindType' => $card->project_bind_type,
+                'customerCount' => $card->customer_count,
+                'description' => $card->description,
+                'remark' => $card->remark,
+                'status' => $card->status,
+                'onlineTime' => $card->online_time,
+                'offlineTime' => $card->offline_time,
+                'saleStoreIds' => $card->sale_store_ids ? json_decode($card->sale_store_ids) : [],
+                'consumeStoreIds' => $card->consume_store_ids ? json_decode($card->consume_store_ids) : [],
+                'saleDepartmentIds' => $card->sale_department_ids ? json_decode($card->sale_department_ids) : [],
+                'consumeDepartmentIds' => $card->consume_department_ids ? json_decode($card->consume_department_ids) : [],
+                'isModifiable' => $card->is_modifiable,
+                'createTime' => $card->created_at
+            ];
+            
+            $projects = DB::table('card_time_project')
+                ->where('time_card_id', $id)
+                ->where('isDelete', 0)
+                ->get();
+            
+            $projectsList = [];
+            foreach ($projects as $project) {
+                $projectName = '';
+                if ($project->project_id) {
+                    $projectInfo = DB::table('card_project')->where('id', $project->project_id)->first();
+                    if ($projectInfo) {
+                        $projectName = $projectInfo->project_name ?? '';
+                    }
+                }
+                $projectsList[] = [
+                    'id' => $project->id,
+                    'projectId' => $project->project_id,
+                    'projectName' => $projectName,
+                    'times' => $project->times,
+                    'unitPrice' => $project->unit_price,
+                    'totalPrice' => $project->total_price,
+                    'consume' => $project->consume,
+                    'manualSalary' => $project->manual_salary
+                ];
+            }
+            
+            $products = DB::table('card_time_product')
+                ->where('time_card_id', $id)
+                ->where('isDelete', 0)
+                ->get();
+            
+            $productsList = [];
+            foreach ($products as $product) {
+                $productName = '';
+                if ($product->product_id) {
+                    $productInfo = DB::table('card_product')->where('id', $product->product_id)->first();
+                    if ($productInfo) {
+                        $productName = $productInfo->product_name ?? '';
+                    }
+                }
+                $productsList[] = [
+                    'id' => $product->id,
+                    'productId' => $product->product_id,
+                    'productName' => $productName,
+                    'times' => $product->times,
+                    'unitPrice' => $product->unit_price,
+                    'totalPrice' => $product->total_price,
+                    'manualSalary' => $product->manual_salary
+                ];
+            }
+            
+            $formattedCard['projects'] = $projectsList;
+            $formattedCard['products'] = $productsList;
+            
+            return json(['code' => 200, 'message' => '获取时效卡详情成功', 'data' => $formattedCard]);
+        } catch (\Exception $e) {
+            \support\Log::error('Get time card detail error: ' . $e->getMessage());
+            return json(['code' => 500, 'message' => '获取时效卡详情失败，请稍后重试']);
         }
     }
     
@@ -2012,21 +2161,82 @@ class CardItemController
             
             $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
             
-            // 转换字段名：camelCase 转 snake_case
+            $formatDateTime = function($value) {
+                if (empty($value)) return null;
+                if (is_string($value)) {
+                    $timestamp = strtotime($value);
+                    return $timestamp ? date('Y-m-d H:i:s', $timestamp) : null;
+                }
+                return $value;
+            };
+            
             $dbData = [
                 'company_id' => $data['companyId'] ?? $currentCompanyId,
                 'card_name' => $data['cardName'] ?? '',
+                'card_code' => $data['cardCode'] ?? '',
+                'original_price' => $data['originalPrice'] ?? 0,
                 'valid_days' => $data['validDays'] ?? 0,
+                'valid_type' => $data['validType'] ?? 1,
                 'price' => $data['price'] ?? 0,
+                'use_rule_type' => $data['useRuleType'] ?? 1,
+                'max_use_count' => $data['maxUseCount'] ?? null,
+                'interval_hours' => $data['intervalHours'] ?? null,
+                'project_bind_type' => $data['projectBindType'] ?? 1,
+                'customer_count' => 0,
+                'description' => $data['description'] ?? '',
+                'remark' => $data['remark'] ?? '',
+                'status' => $data['status'] ?? 1,
+                'online_time' => $formatDateTime($data['onlineTime'] ?? null),
+                'offline_time' => $formatDateTime($data['offlineTime'] ?? null),
+                'sale_store_ids' => isset($data['saleStoreIds']) ? json_encode($data['saleStoreIds']) : null,
+                'consume_store_ids' => isset($data['consumeStoreIds']) ? json_encode($data['consumeStoreIds']) : null,
+                'sale_department_ids' => isset($data['saleDepartmentIds']) ? json_encode($data['saleDepartmentIds']) : null,
+                'consume_department_ids' => isset($data['consumeDepartmentIds']) ? json_encode($data['consumeDepartmentIds']) : null,
+                'is_modifiable' => $data['isModifiable'] ?? 0,
                 'isDelete' => 0,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ];
             
             $id = DB::table('card_time')->insertGetId($dbData);
-            return json(['code' => 200, 'message' => '添加时效卡成功', 'data' => ['id' => $id, ...$dbData]]);
+            
+            if (!empty($data['projects'])) {
+                foreach ($data['projects'] as $project) {
+                    DB::table('card_time_project')->insert([
+                        'company_id' => $currentCompanyId,
+                        'time_card_id' => $id,
+                        'project_id' => $project['projectId'] ?? 0,
+                        'times' => $project['times'] ?? 1,
+                        'unit_price' => $project['unitPrice'] ?? 0,
+                        'total_price' => $project['totalPrice'] ?? 0,
+                        'consume' => $project['consume'] ?? 0,
+                        'manual_salary' => $project['manualSalary'] ?? 0,
+                        'isDelete' => 0,
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at' => date('Y-m-d H:i:s')
+                    ]);
+                }
+            }
+            
+            if (!empty($data['products'])) {
+                foreach ($data['products'] as $product) {
+                    DB::table('card_time_product')->insert([
+                        'company_id' => $currentCompanyId,
+                        'time_card_id' => $id,
+                        'product_id' => $product['productId'] ?? 0,
+                        'times' => $product['times'] ?? 1,
+                        'unit_price' => $product['unitPrice'] ?? 0,
+                        'total_price' => $product['totalPrice'] ?? 0,
+                        'manual_salary' => $product['manualSalary'] ?? 0,
+                        'isDelete' => 0,
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at' => date('Y-m-d H:i:s')
+                    ]);
+                }
+            }
+            
+            return json(['code' => 200, 'message' => '添加时效卡成功', 'data' => ['id' => $id]]);
         } catch (\Exception $e) {
-            // 记录错误日志
             error_log('Add time card error: ' . $e->getMessage());
             return json(['code' => 500, 'message' => '添加时效卡失败，请稍后重试']);
         }
@@ -2049,23 +2259,127 @@ class CardItemController
                 }
             }
             
-            $card = DB::table('card_time')->where('id', $id)->first();
+            $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
+            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
+            
+            $query = DB::table('card_time')->where('id', $id)->where('isDelete', 0);
+            if (!$isSuper && $currentCompanyId) {
+                $query->where('company_id', $currentCompanyId);
+            }
+            $card = $query->first();
             if (!$card) {
                 return json(['code' => 404, 'message' => '时效卡不存在']);
             }
             
-            // 转换字段名：camelCase 转 snake_case
+            $formatDateTime = function($value, $default = null) {
+                if (empty($value)) return $default;
+                if (is_string($value)) {
+                    $timestamp = strtotime($value);
+                    return $timestamp ? date('Y-m-d H:i:s', $timestamp) : $default;
+                }
+                return $value;
+            };
+            
             $dbData = [
                 'card_name' => $data['cardName'] ?? $card->card_name,
+                'card_code' => $data['cardCode'] ?? $card->card_code,
+                'original_price' => $data['originalPrice'] ?? $card->original_price,
                 'valid_days' => $data['validDays'] ?? $card->valid_days,
+                'valid_type' => $data['validType'] ?? $card->valid_type,
                 'price' => $data['price'] ?? $card->price,
+                'use_rule_type' => $data['useRuleType'] ?? $card->use_rule_type,
+                'max_use_count' => $data['maxUseCount'] ?? $card->max_use_count,
+                'interval_hours' => $data['intervalHours'] ?? $card->interval_hours,
+                'project_bind_type' => $data['projectBindType'] ?? $card->project_bind_type,
+                'description' => $data['description'] ?? $card->description,
+                'remark' => $data['remark'] ?? $card->remark,
+                'status' => $data['status'] ?? $card->status,
+                'online_time' => $formatDateTime($data['onlineTime'] ?? null, $card->online_time),
+                'offline_time' => $formatDateTime($data['offlineTime'] ?? null, $card->offline_time),
+                'sale_store_ids' => isset($data['saleStoreIds']) ? json_encode($data['saleStoreIds']) : $card->sale_store_ids,
+                'consume_store_ids' => isset($data['consumeStoreIds']) ? json_encode($data['consumeStoreIds']) : $card->consume_store_ids,
+                'sale_department_ids' => isset($data['saleDepartmentIds']) ? json_encode($data['saleDepartmentIds']) : $card->sale_department_ids,
+                'consume_department_ids' => isset($data['consumeDepartmentIds']) ? json_encode($data['consumeDepartmentIds']) : $card->consume_department_ids,
+                'is_modifiable' => $data['isModifiable'] ?? $card->is_modifiable,
                 'updated_at' => date('Y-m-d H:i:s')
             ];
             
             DB::table('card_time')->where('id', $id)->update($dbData);
-            return json(['code' => 200, 'message' => '更新时效卡成功', 'data' => ['id' => $id, ...$dbData]]);
+            
+            if (!empty($data['projects'])) {
+                DB::table('card_time_project')
+                    ->where('time_card_id', $id)
+                    ->update(['isDelete' => 1, 'updated_at' => date('Y-m-d H:i:s')]);
+                    
+                foreach ($data['projects'] as $project) {
+                    if (!empty($project['id'])) {
+                        DB::table('card_time_project')
+                            ->where('id', $project['id'])
+                            ->update([
+                                'project_id' => $project['projectId'] ?? 0,
+                                'times' => $project['times'] ?? 1,
+                                'unit_price' => $project['unitPrice'] ?? 0,
+                                'total_price' => $project['totalPrice'] ?? 0,
+                                'consume' => $project['consume'] ?? 0,
+                                'manual_salary' => $project['manualSalary'] ?? 0,
+                                'isDelete' => 0,
+                                'updated_at' => date('Y-m-d H:i:s')
+                            ]);
+                    } else {
+                        DB::table('card_time_project')->insert([
+                            'company_id' => $currentCompanyId,
+                            'time_card_id' => $id,
+                            'project_id' => $project['projectId'] ?? 0,
+                            'times' => $project['times'] ?? 1,
+                            'unit_price' => $project['unitPrice'] ?? 0,
+                            'total_price' => $project['totalPrice'] ?? 0,
+                            'consume' => $project['consume'] ?? 0,
+                            'manual_salary' => $project['manualSalary'] ?? 0,
+                            'isDelete' => 0,
+                            'created_at' => date('Y-m-d H:i:s'),
+                            'updated_at' => date('Y-m-d H:i:s')
+                        ]);
+                    }
+                }
+            }
+            
+            if (!empty($data['products'])) {
+                DB::table('card_time_product')
+                    ->where('time_card_id', $id)
+                    ->update(['isDelete' => 1, 'updated_at' => date('Y-m-d H:i:s')]);
+                    
+                foreach ($data['products'] as $product) {
+                    if (!empty($product['id'])) {
+                        DB::table('card_time_product')
+                            ->where('id', $product['id'])
+                            ->update([
+                                'product_id' => $product['productId'] ?? 0,
+                                'times' => $product['times'] ?? 1,
+                                'unit_price' => $product['unitPrice'] ?? 0,
+                                'total_price' => $product['totalPrice'] ?? 0,
+                                'manual_salary' => $product['manualSalary'] ?? 0,
+                                'isDelete' => 0,
+                                'updated_at' => date('Y-m-d H:i:s')
+                            ]);
+                    } else {
+                        DB::table('card_time_product')->insert([
+                            'company_id' => $currentCompanyId,
+                            'time_card_id' => $id,
+                            'product_id' => $product['productId'] ?? 0,
+                            'times' => $product['times'] ?? 1,
+                            'unit_price' => $product['unitPrice'] ?? 0,
+                            'total_price' => $product['totalPrice'] ?? 0,
+                            'manual_salary' => $product['manualSalary'] ?? 0,
+                            'isDelete' => 0,
+                            'created_at' => date('Y-m-d H:i:s'),
+                            'updated_at' => date('Y-m-d H:i:s')
+                        ]);
+                    }
+                }
+            }
+            
+            return json(['code' => 200, 'message' => '更新时效卡成功']);
         } catch (\Exception $e) {
-            // 记录错误日志
             error_log('Update time card error: ' . $e->getMessage());
             return json(['code' => 500, 'message' => '更新时效卡失败，请稍后重试']);
         }
@@ -2080,19 +2394,215 @@ class CardItemController
     public function deleteTimeCard(Request $request, $id)
     {
         try {
-            // 检查时效卡是否存在
-            $card = DB::table('card_time')->where('id', $id)->first();
+            $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
+            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
+            
+            $query = DB::table('card_time')->where('id', $id)->where('isDelete', 0);
+            if (!$isSuper && $currentCompanyId) {
+                $query->where('company_id', $currentCompanyId);
+            }
+            $card = $query->first();
             if (!$card) {
                 return json(['code' => 404, 'message' => '时效卡不存在']);
             }
             
-            // 软删除时效卡
             DB::table('card_time')->where('id', $id)->update(['isDelete' => 1]);
+            DB::table('card_time_project')->where('time_card_id', $id)->update(['isDelete' => 1]);
+            DB::table('card_time_product')->where('time_card_id', $id)->update(['isDelete' => 1]);
+            
             return json(['code' => 200, 'message' => '删除时效卡成功']);
         } catch (\Exception $e) {
-            // 记录错误日志
             error_log('Delete time card error: ' . $e->getMessage());
             return json(['code' => 500, 'message' => '删除时效卡失败，请稍后重试']);
+        }
+    }
+    
+    /**
+     * 复制时效卡
+     * @param Request $request 请求对象
+     * @param int $id 时效卡ID
+     * @return array 复制结果
+     */
+    public function copyTimeCard(Request $request, $id)
+    {
+        try {
+            $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
+            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
+            
+            $query = DB::table('card_time')->where('id', $id)->where('isDelete', 0);
+            if (!$isSuper && $currentCompanyId) {
+                $query->where('company_id', $currentCompanyId);
+            }
+            $card = $query->first();
+            if (!$card) {
+                return json(['code' => 404, 'message' => '时效卡不存在']);
+            }
+            
+            $newCardData = [
+                'company_id' => $card->company_id,
+                'card_name' => $card->card_name . '(副本)',
+                'card_code' => $card->card_code,
+                'original_price' => $card->original_price,
+                'valid_days' => $card->valid_days,
+                'valid_type' => $card->valid_type,
+                'price' => $card->price,
+                'use_rule_type' => $card->use_rule_type,
+                'max_use_count' => $card->max_use_count,
+                'interval_hours' => $card->interval_hours,
+                'project_bind_type' => $card->project_bind_type,
+                'customer_count' => 0,
+                'description' => $card->description,
+                'remark' => $card->remark,
+                'status' => 0,
+                'online_time' => null,
+                'offline_time' => null,
+                'sale_store_ids' => $card->sale_store_ids,
+                'consume_store_ids' => $card->consume_store_ids,
+                'sale_department_ids' => $card->sale_department_ids,
+                'consume_department_ids' => $card->consume_department_ids,
+                'is_modifiable' => $card->is_modifiable,
+                'isDelete' => 0,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+            
+            $newId = DB::table('card_time')->insertGetId($newCardData);
+            
+            $projects = DB::table('card_time_project')
+                ->where('time_card_id', $id)
+                ->where('isDelete', 0)
+                ->get();
+            
+            foreach ($projects as $project) {
+                DB::table('card_time_project')->insert([
+                    'company_id' => $project->company_id,
+                    'time_card_id' => $newId,
+                    'project_id' => $project->project_id,
+                    'times' => $project->times,
+                    'unit_price' => $project->unit_price,
+                    'total_price' => $project->total_price,
+                    'consume' => $project->consume,
+                    'manual_salary' => $project->manual_salary,
+                    'isDelete' => 0,
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+            }
+            
+            $products = DB::table('card_time_product')
+                ->where('time_card_id', $id)
+                ->where('isDelete', 0)
+                ->get();
+            
+            foreach ($products as $product) {
+                DB::table('card_time_product')->insert([
+                    'company_id' => $product->company_id,
+                    'time_card_id' => $newId,
+                    'product_id' => $product->product_id,
+                    'times' => $product->times,
+                    'unit_price' => $product->unit_price,
+                    'total_price' => $product->total_price,
+                    'manual_salary' => $product->manual_salary,
+                    'isDelete' => 0,
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+            }
+            
+            return json(['code' => 200, 'message' => '复制时效卡成功', 'data' => ['id' => $newId]]);
+        } catch (\Exception $e) {
+            error_log('Copy time card error: ' . $e->getMessage());
+            return json(['code' => 500, 'message' => '复制时效卡失败，请稍后重试']);
+        }
+    }
+    
+    /**
+     * 切换时效卡状态
+     * @param Request $request 请求对象
+     * @param int $id 时效卡ID
+     * @return array 切换结果
+     */
+    public function toggleTimeCardStatus(Request $request, $id)
+    {
+        try {
+            $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
+            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
+            
+            $query = DB::table('card_time')->where('id', $id)->where('isDelete', 0);
+            if (!$isSuper && $currentCompanyId) {
+                $query->where('company_id', $currentCompanyId);
+            }
+            $card = $query->first();
+            if (!$card) {
+                return json(['code' => 404, 'message' => '时效卡不存在']);
+            }
+            
+            $newStatus = $card->status == 1 ? 0 : 1;
+            
+            if ($newStatus == 0 && $card->customer_count > 0) {
+                return json([
+                    'code' => 400, 
+                    'message' => '该卡已有 ' . $card->customer_count . ' 位顾客办理，确定要禁用吗？',
+                    'data' => ['customerCount' => $card->customer_count]
+                ]);
+            }
+            
+            DB::table('card_time')->where('id', $id)->update([
+                'status' => $newStatus,
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+            
+            return json(['code' => 200, 'message' => $newStatus == 1 ? '启用成功' : '禁用成功', 'data' => ['status' => $newStatus]]);
+        } catch (\Exception $e) {
+            error_log('Toggle time card status error: ' . $e->getMessage());
+            return json(['code' => 500, 'message' => '切换状态失败，请稍后重试']);
+        }
+    }
+    
+    /**
+     * 批量修改时效卡状态
+     * @param Request $request 请求对象
+     * @return array 批量修改结果
+     */
+    public function batchTimeCardStatus(Request $request)
+    {
+        try {
+            $data = $request->post();
+            if (empty($data)) {
+                $rawBody = $request->rawBody();
+                if ($rawBody) {
+                    $data = json_decode($rawBody, true);
+                }
+            }
+            
+            if (empty($data['ids']) || !is_array($data['ids'])) {
+                return json(['code' => 400, 'message' => '请选择要操作的时效卡']);
+            }
+            
+            if (!isset($data['status'])) {
+                return json(['code' => 400, 'message' => '请指定状态']);
+            }
+            
+            $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
+            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
+            
+            $query = DB::table('card_time')
+                ->whereIn('id', $data['ids'])
+                ->where('isDelete', 0);
+            
+            if (!$isSuper && $currentCompanyId) {
+                $query->where('company_id', $currentCompanyId);
+            }
+            
+            $count = $query->update([
+                'status' => $data['status'],
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+            
+            return json(['code' => 200, 'message' => '批量修改成功', 'data' => ['count' => $count]]);
+        } catch (\Exception $e) {
+            error_log('Batch time card status error: ' . $e->getMessage());
+            return json(['code' => 500, 'message' => '批量修改失败，请稍后重试']);
         }
     }
     
@@ -2164,6 +2674,13 @@ class CardItemController
             $products = $query->get();
             
             $formattedProducts = $products->map(function($product) {
+                $supplierName = null;
+                if ($product->supplier_id) {
+                    $supplier = DB::table('card_supplier')->where('id', $product->supplier_id)->first();
+                    if ($supplier) {
+                        $supplierName = $supplier->supplier_name;
+                    }
+                }
                 return [
                     'id' => $product->id,
                     'productName' => $product->product_name,
@@ -2172,6 +2689,7 @@ class CardItemController
                     'barcode' => $product->barcode ?? '',
                     'categoryId' => $product->category_id,
                     'supplierId' => $product->supplier_id,
+                    'supplierName' => $supplierName,
                     'productType' => $product->product_type ?? '',
                     'unit' => $product->unit ?? '',
                     'monthlyLimit' => $product->monthly_limit ?? 0,

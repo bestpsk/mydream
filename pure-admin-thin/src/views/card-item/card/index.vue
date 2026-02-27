@@ -66,6 +66,8 @@
             v-if="hasAuth('card:time:view')"
             :store-list="storeList"
             :department-list="departmentList"
+            :project-list="projectList"
+            :product-list="productList"
           />
           <div v-else class="no-permission flex-1 flex items-center justify-center">
             <el-empty description="无权限查看数据" />

@@ -65,10 +65,10 @@ CREATE TABLE IF NOT EXISTS `card_package` (
   KEY `idx_company_id` (`company_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='套餐卡表';
 
--- 正在导出表  mydream.card_package 的数据：~1 rows (大约)
+-- 正在导出表  mydream.card_package 的数据：~0 rows (大约)
 /*!40000 ALTER TABLE `card_package` DISABLE KEYS */;
 INSERT INTO `card_package` (`id`, `company_id`, `card_name`, `original_price`, `price`, `project_count`, `isDelete`, `created_at`, `updated_at`, `card_code`, `description`, `remark`, `is_modifiable`, `is_add_new_item_forbidden`, `is_limit_once`, `is_expire_invalid`, `is_gift_forbidden`, `online_time`, `offline_time`, `expire_type`, `expire_date`, `expire_months`, `sale_store_ids`, `consume_store_ids`, `sale_department_ids`, `consume_department_ids`) VALUES
-	(1, 2, 'aaa', 111.00, 111.00, 1, 0, '2026-02-25 14:47:44', '2026-02-25 17:14:18', 'aaa', '22', '22', 0, 1, 1, 1, 1, '2026-02-25 14:42:04', '2026-02-28 00:00:00', 1, '2026-02-28', 12, '[1,2]', '[1,2]', '[1,2]', '[1,2]');
+	(1, 2, '是的等等', 111.00, 111.00, 1, 0, '2026-02-25 14:47:44', '2026-02-27 18:34:56', 'SDDD', '22', '22', 0, 1, 1, 1, 1, '2026-02-25 14:42:04', '2026-02-28 00:00:00', 1, '2026-02-28', 12, '[]', '[]', '[]', '[]');
 /*!40000 ALTER TABLE `card_package` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_package_gift_product 结构
@@ -115,7 +115,7 @@ CREATE TABLE IF NOT EXISTS `card_package_gift_project` (
 -- 正在导出表  mydream.card_package_gift_project 的数据：1 rows
 /*!40000 ALTER TABLE `card_package_gift_project` DISABLE KEYS */;
 INSERT INTO `card_package_gift_project` (`id`, `company_id`, `package_id`, `project_id`, `times`, `unit_price`, `total_price`, `consume`, `manual_salary`, `isDelete`, `created_at`, `updated_at`) VALUES
-	(1, 2, 1, 1, 1, 198.00, 198.00, 98, 60.00, 0, '2026-02-25 16:43:02', '2026-02-25 17:14:18');
+	(1, 2, 1, 1, 1, 198.00, 198.00, 98, 60.00, 0, '2026-02-25 16:43:02', '2026-02-27 18:34:56');
 /*!40000 ALTER TABLE `card_package_gift_project` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_product 结构
@@ -123,11 +123,11 @@ CREATE TABLE IF NOT EXISTS `card_product` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `company_id` int(10) unsigned DEFAULT NULL,
   `product_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `product_code` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '产品编码',
-  `external_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '外部显示名',
-  `barcode` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '条码',
+  `product_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '产品编码',
+  `external_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '外部显示名',
+  `barcode` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '条码',
   `category_id` int(10) unsigned DEFAULT NULL,
-  `product_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '产品类型',
+  `product_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '产品类型',
   `isDelete` tinyint(1) DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -139,12 +139,12 @@ CREATE TABLE IF NOT EXISTS `card_product` (
   `offline_date` date DEFAULT NULL COMMENT '下线日期',
   `stock_min` int(11) DEFAULT '0' COMMENT '库存下限',
   `stock_max` int(11) DEFAULT '0' COMMENT '库存上限',
-  `approval_number` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '批准文号',
+  `approval_number` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '批准文号',
   `expiry_date` date DEFAULT NULL COMMENT '到期日期',
-  `limited_sale_stores` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '限定销售分店',
-  `limited_consume_stores` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '限定消耗分店',
-  `limited_sale_depts` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '限定销售部门',
-  `limited_consume_depts` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '限定消耗部门',
+  `limited_sale_stores` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '限定销售分店',
+  `limited_consume_stores` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '限定消耗分店',
+  `limited_sale_depts` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '限定销售部门',
+  `limited_consume_depts` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '限定消耗部门',
   `no_discount` tinyint(4) DEFAULT '0' COMMENT '充值卡不打折',
   `allow_gift` tinyint(4) DEFAULT '0' COMMENT '允许赠送',
   `no_consumption` tinyint(4) DEFAULT '0' COMMENT '不计消耗',
@@ -152,18 +152,18 @@ CREATE TABLE IF NOT EXISTS `card_product` (
   `is_ym` tinyint(4) DEFAULT '0' COMMENT 'YM产品',
   `is_special` tinyint(4) DEFAULT '0' COMMENT '特项产品',
   `supplier_id` int(11) DEFAULT '0',
-  `unit` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '单位',
+  `unit` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '单位',
   `monthly_limit` int(11) DEFAULT '0' COMMENT '每月限制次数',
   `consumption_interval` int(11) DEFAULT '0' COMMENT '消费间隔天数',
-  `specification` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '规格',
+  `specification` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '规格',
   `status` tinyint(1) DEFAULT '1',
-  `remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
+  `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`id`),
   KEY `company_id` (`company_id`),
   KEY `category_id` (`category_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='产品表';
 
--- 正在导出表  mydream.card_product 的数据：~1 rows (大约)
+-- 正在导出表  mydream.card_product 的数据：~0 rows (大约)
 /*!40000 ALTER TABLE `card_product` DISABLE KEYS */;
 INSERT INTO `card_product` (`id`, `company_id`, `product_name`, `product_code`, `external_name`, `barcode`, `category_id`, `product_type`, `isDelete`, `created_at`, `updated_at`, `original_price`, `sale_price`, `experience_price`, `purchase_price`, `online_date`, `offline_date`, `stock_min`, `stock_max`, `approval_number`, `expiry_date`, `limited_sale_stores`, `limited_consume_stores`, `limited_sale_depts`, `limited_consume_depts`, `no_discount`, `allow_gift`, `no_consumption`, `is_cooperative`, `is_ym`, `is_special`, `supplier_id`, `unit`, `monthly_limit`, `consumption_interval`, `specification`, `status`, `remark`) VALUES
 	(1, 2, '测试产品', '', '测试', '111', 1, '', 0, '2026-02-25 22:18:51', '2026-02-25 22:18:51', 690.00, 390.00, 190.00, 230.00, '2026-02-02', '2026-02-27', 12, 999, '111', '2030-02-01', '[1,2]', '[1,2]', '[1,2]', '[1,2]', 1, 0, 0, 0, 0, 0, 1, '套', 2, 2, '12个', 1, '123');
@@ -316,7 +316,8 @@ CREATE TABLE IF NOT EXISTS `card_recharge` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `company_id` int(11) NOT NULL COMMENT '所属公司ID',
   `card_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '卡名称',
-  `isDelete` tinyint(1) DEFAULT '0' COMMENT '是否删除',
+  `is_delete` tinyint(1) DEFAULT '0' COMMENT '是否删除',
+  `card_code` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '卡编码',
   `created_at` datetime NOT NULL COMMENT '创建时间',
   `updated_at` datetime NOT NULL COMMENT '更新时间',
   `amount` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '金额',
@@ -343,28 +344,28 @@ CREATE TABLE IF NOT EXISTS `card_recharge` (
 
 -- 正在导出表  mydream.card_recharge 的数据：~21 rows (大约)
 /*!40000 ALTER TABLE `card_recharge` DISABLE KEYS */;
-INSERT INTO `card_recharge` (`id`, `company_id`, `card_name`, `isDelete`, `created_at`, `updated_at`, `amount`, `gift_amount`, `project_discount`, `product_discount`, `consume_rate`, `min_recharge_limit`, `start_time`, `end_time`, `expire_date`, `expire_type`, `description`, `remark`, `status`, `is_modifiable`, `is_limit_once`, `is_expire_invalid`, `is_project_expire`, `is_prohibit_discount_modify`) VALUES
-	(1, 1, '测试充值卡', 0, '2026-02-08 00:39:22', '2026-02-08 00:39:22', 1000.00, 100.00, 10.00, 10.00, 100, 0.00, NULL, NULL, NULL, 3, '测试充值卡描述', '测试充值卡备注', 0, 1, 0, 1, 1, 0),
-	(2, 2, '?????', 1, '2026-02-08 00:53:34', '2026-02-08 00:53:34', 1000.00, 0.00, 10.00, 10.00, 100, 0.00, NULL, NULL, NULL, 3, NULL, NULL, 0, 1, 0, 1, 1, 0),
-	(3, 2, '?????', 1, '2026-02-08 00:54:44', '2026-02-08 00:54:44', 1000.00, 0.00, 10.00, 10.00, 100, 0.00, NULL, NULL, NULL, 3, NULL, NULL, 0, 1, 0, 1, 1, 0),
-	(4, 2, '?????', 1, '2026-02-08 00:55:35', '2026-02-08 00:55:35', 1000.00, 0.00, 10.00, 10.00, 100, 0.00, NULL, NULL, NULL, 3, NULL, NULL, 0, 1, 0, 1, 1, 0),
-	(5, 2, '发过的', 1, '2026-02-08 02:51:41', '2026-02-08 02:51:41', 5555.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
-	(6, 2, '大撒大声地', 1, '2026-02-08 02:51:47', '2026-02-08 02:51:47', 5555.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
-	(7, 2, '撒大声地', 1, '2026-02-08 02:52:21', '2026-02-08 02:52:21', 3333.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
-	(8, 2, '发过的', 1, '2026-02-08 02:52:39', '2026-02-08 02:52:39', 5555.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
-	(9, 2, '大萨达', 1, '2026-02-08 02:53:29', '2026-02-08 02:53:29', 4444.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
-	(10, 2, '大萨达', 1, '2026-02-08 02:54:05', '2026-02-08 02:54:05', 4444.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
-	(11, 2, '大萨达', 1, '2026-02-08 02:54:53', '2026-02-08 02:54:53', 4444.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
-	(12, 2, '大萨达', 0, '2026-02-08 02:54:55', '2026-02-24 18:19:59', 4444.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 1, 1, 0, 1, 1, 0),
-	(13, 2, '大萨达', 1, '2026-02-08 02:55:38', '2026-02-08 02:55:38', 4444.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
-	(14, 2, '大萨达', 1, '2026-02-08 02:55:43', '2026-02-08 02:55:43', 4444.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
-	(15, 2, '大萨达', 1, '2026-02-08 02:55:59', '2026-02-08 02:55:59', 4444.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
-	(16, 2, '大萨达', 1, '2026-02-08 02:56:17', '2026-02-08 02:56:17', 4444.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
-	(17, 2, '实打实', 1, '2026-02-08 02:56:47', '2026-02-08 02:56:47', 5555.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
-	(18, 2, '实打实', 1, '2026-02-08 02:57:24', '2026-02-08 02:57:24', 5555.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
-	(19, 2, '实打实', 0, '2026-02-08 02:58:11', '2026-02-24 18:19:58', 5555.00, 0.00, 100.00, 100.00, 100, 0.00, '2026-02-02 16:00:00', '2026-02-26 16:00:00', NULL, 3, '11111', '2222', 1, 0, 1, 1, 1, 1),
-	(20, 2, '测试1', 0, '2026-02-24 16:58:02', '2026-02-24 21:02:50', 100.00, 10.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '11', '12', 1, 0, 0, 1, 1, 0),
-	(21, 2, '琴琴', 0, '2026-02-24 21:25:12', '2026-02-25 16:46:56', 5980.00, 1000.00, 100.00, 100.00, 100, 0.00, '2026-02-24 16:00:00', '2026-03-03 16:00:00', NULL, 1, '113', '221', 1, 0, 0, 1, 1, 0);
+INSERT INTO `card_recharge` (`id`, `company_id`, `card_name`, `is_delete`, `card_code`, `created_at`, `updated_at`, `amount`, `gift_amount`, `project_discount`, `product_discount`, `consume_rate`, `min_recharge_limit`, `start_time`, `end_time`, `expire_date`, `expire_type`, `description`, `remark`, `status`, `is_modifiable`, `is_limit_once`, `is_expire_invalid`, `is_project_expire`, `is_prohibit_discount_modify`) VALUES
+	(1, 1, '测试充值卡', 0, NULL, '2026-02-08 00:39:22', '2026-02-08 00:39:22', 1000.00, 100.00, 10.00, 10.00, 100, 0.00, NULL, NULL, NULL, 3, '测试充值卡描述', '测试充值卡备注', 0, 1, 0, 1, 1, 0),
+	(2, 2, '?????', 1, NULL, '2026-02-08 00:53:34', '2026-02-08 00:53:34', 1000.00, 0.00, 10.00, 10.00, 100, 0.00, NULL, NULL, NULL, 3, NULL, NULL, 0, 1, 0, 1, 1, 0),
+	(3, 2, '?????', 1, NULL, '2026-02-08 00:54:44', '2026-02-08 00:54:44', 1000.00, 0.00, 10.00, 10.00, 100, 0.00, NULL, NULL, NULL, 3, NULL, NULL, 0, 1, 0, 1, 1, 0),
+	(4, 2, '?????', 1, NULL, '2026-02-08 00:55:35', '2026-02-08 00:55:35', 1000.00, 0.00, 10.00, 10.00, 100, 0.00, NULL, NULL, NULL, 3, NULL, NULL, 0, 1, 0, 1, 1, 0),
+	(5, 2, '发过的', 1, NULL, '2026-02-08 02:51:41', '2026-02-08 02:51:41', 5555.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
+	(6, 2, '大撒大声地', 1, NULL, '2026-02-08 02:51:47', '2026-02-08 02:51:47', 5555.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
+	(7, 2, '撒大声地', 1, NULL, '2026-02-08 02:52:21', '2026-02-08 02:52:21', 3333.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
+	(8, 2, '发过的', 1, NULL, '2026-02-08 02:52:39', '2026-02-08 02:52:39', 5555.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
+	(9, 2, '大萨达', 1, NULL, '2026-02-08 02:53:29', '2026-02-08 02:53:29', 4444.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
+	(10, 2, '大萨达', 1, NULL, '2026-02-08 02:54:05', '2026-02-08 02:54:05', 4444.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
+	(11, 2, '大萨达', 1, NULL, '2026-02-08 02:54:53', '2026-02-08 02:54:53', 4444.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
+	(12, 2, '大萨达', 0, NULL, '2026-02-08 02:54:55', '2026-02-24 18:19:59', 4444.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 1, 1, 0, 1, 1, 0),
+	(13, 2, '大萨达', 1, NULL, '2026-02-08 02:55:38', '2026-02-08 02:55:38', 4444.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
+	(14, 2, '大萨达', 1, NULL, '2026-02-08 02:55:43', '2026-02-08 02:55:43', 4444.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
+	(15, 2, '大萨达', 1, NULL, '2026-02-08 02:55:59', '2026-02-08 02:55:59', 4444.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
+	(16, 2, '大萨达', 1, NULL, '2026-02-08 02:56:17', '2026-02-08 02:56:17', 4444.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
+	(17, 2, '实打实', 1, NULL, '2026-02-08 02:56:47', '2026-02-08 02:56:47', 5555.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
+	(18, 2, '实打实', 1, NULL, '2026-02-08 02:57:24', '2026-02-08 02:57:24', 5555.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
+	(19, 2, '实打实', 0, NULL, '2026-02-08 02:58:11', '2026-02-24 18:19:58', 5555.00, 0.00, 100.00, 100.00, 100, 0.00, '2026-02-02 16:00:00', '2026-02-26 16:00:00', NULL, 3, '11111', '2222', 1, 0, 1, 1, 1, 1),
+	(20, 2, '测试1', 0, NULL, '2026-02-24 16:58:02', '2026-02-24 21:02:50', 100.00, 10.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '11', '12', 1, 0, 0, 1, 1, 0),
+	(21, 2, '琴琴', 0, NULL, '2026-02-24 21:25:12', '2026-02-27 18:52:41', 5980.00, 1000.00, 100.00, 100.00, 100, 0.00, '2026-02-24 16:00:00', '2026-03-03 16:00:00', NULL, 1, '113', '221', 1, 0, 0, 1, 1, 0);
 /*!40000 ALTER TABLE `card_recharge` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_recharge_consume_department 结构
@@ -409,9 +410,7 @@ INSERT INTO `card_recharge_consume_department` (`id`, `recharge_id`, `department
 	(27, 18, 1, '2026-02-08 02:57:25', '2026-02-08 02:57:25'),
 	(28, 18, 2, '2026-02-08 02:57:25', '2026-02-08 02:57:25'),
 	(111, 20, 1, '2026-02-24 21:02:50', '2026-02-24 21:02:50'),
-	(112, 20, 2, '2026-02-24 21:02:50', '2026-02-24 21:02:50'),
-	(125, 21, 1, '2026-02-25 16:46:57', '2026-02-25 16:46:57'),
-	(126, 21, 2, '2026-02-25 16:46:57', '2026-02-25 16:46:57');
+	(112, 20, 2, '2026-02-24 21:02:50', '2026-02-24 21:02:50');
 /*!40000 ALTER TABLE `card_recharge_consume_department` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_recharge_consume_store 结构
@@ -431,9 +430,7 @@ CREATE TABLE IF NOT EXISTS `card_recharge_consume_store` (
 INSERT INTO `card_recharge_consume_store` (`id`, `recharge_id`, `store_id`) VALUES
 	(1, 1, 1),
 	(47, 20, 1),
-	(48, 20, 2),
-	(61, 21, 1),
-	(62, 21, 2);
+	(48, 20, 2);
 /*!40000 ALTER TABLE `card_recharge_consume_store` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_recharge_gift_product 结构
@@ -441,22 +438,24 @@ CREATE TABLE IF NOT EXISTS `card_recharge_gift_product` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `recharge_id` int(10) unsigned NOT NULL,
   `product_id` int(10) unsigned NOT NULL,
-  `times` int(10) NOT NULL DEFAULT '1',
-  `unit_price` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `consume` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `manual_salary` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `times` int(10) NOT NULL DEFAULT '1' COMMENT '数量',
+  `unit_price` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '单价',
+  `total_price` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '总价',
+  `consume` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '消耗',
+  `manual_salary` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '手工',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_recharge_id` (`recharge_id`),
   KEY `idx_product_id` (`product_id`),
   CONSTRAINT `card_recharge_gift_product_ibfk_1` FOREIGN KEY (`recharge_id`) REFERENCES `card_recharge` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='配赠产品表';
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='配赠产品表';
 
--- 正在导出表  mydream.card_recharge_gift_product 的数据：~1 rows (大约)
+-- 正在导出表  mydream.card_recharge_gift_product 的数据：~0 rows (大约)
 /*!40000 ALTER TABLE `card_recharge_gift_product` DISABLE KEYS */;
-INSERT INTO `card_recharge_gift_product` (`id`, `recharge_id`, `product_id`, `times`, `unit_price`, `consume`, `manual_salary`, `created_at`, `updated_at`) VALUES
-	(1, 4, 1, 5, 200.00, 0.00, 20.00, '2026-02-08 00:55:35', '2026-02-08 00:55:35');
+INSERT INTO `card_recharge_gift_product` (`id`, `recharge_id`, `product_id`, `times`, `unit_price`, `total_price`, `consume`, `manual_salary`, `created_at`, `updated_at`) VALUES
+	(1, 4, 1, 5, 200.00, 0.00, 0.00, 20.00, '2026-02-08 00:55:35', '2026-02-08 00:55:35'),
+	(3, 21, 1, 2, 390.00, 780.00, 0.00, 0.00, '2026-02-27 18:52:41', '2026-02-27 18:52:41');
 /*!40000 ALTER TABLE `card_recharge_gift_product` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_recharge_gift_project 结构
@@ -464,25 +463,25 @@ CREATE TABLE IF NOT EXISTS `card_recharge_gift_project` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `recharge_id` int(10) unsigned NOT NULL,
   `project_id` int(10) unsigned NOT NULL,
-  `times` int(10) NOT NULL DEFAULT '1',
-  `unit_price` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `total_price` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `consume` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `manual_salary` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `times` int(10) NOT NULL DEFAULT '1' COMMENT '数量',
+  `unit_price` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '单价',
+  `total_price` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '总价',
+  `consume` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '消耗',
+  `manual_salary` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '手工',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_recharge_id` (`recharge_id`),
   KEY `idx_project_id` (`project_id`),
   CONSTRAINT `card_recharge_gift_project_ibfk_1` FOREIGN KEY (`recharge_id`) REFERENCES `card_recharge` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='配赠项目表';
+) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='配赠项目表';
 
 -- 正在导出表  mydream.card_recharge_gift_project 的数据：~3 rows (大约)
 /*!40000 ALTER TABLE `card_recharge_gift_project` DISABLE KEYS */;
 INSERT INTO `card_recharge_gift_project` (`id`, `recharge_id`, `project_id`, `times`, `unit_price`, `total_price`, `consume`, `manual_salary`, `created_at`, `updated_at`) VALUES
 	(1, 4, 1, 10, 100.00, 0.00, 50.00, 10.00, '2026-02-08 00:55:35', '2026-02-08 00:55:35'),
 	(32, 20, 1, 1, 198.00, 198.00, 2.00, 21.00, '2026-02-24 21:02:50', '2026-02-24 21:02:50'),
-	(39, 21, 1, 1, 198.00, 198.00, 22.00, 33.00, '2026-02-25 16:46:57', '2026-02-25 16:46:57');
+	(45, 21, 2, 3, 498.00, 1494.00, 0.00, 0.00, '2026-02-27 18:52:41', '2026-02-27 18:52:41');
 /*!40000 ALTER TABLE `card_recharge_gift_project` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_recharge_sale_department 结构
@@ -527,9 +526,7 @@ INSERT INTO `card_recharge_sale_department` (`id`, `recharge_id`, `department_id
 	(27, 18, 1, '2026-02-08 02:57:25', '2026-02-08 02:57:25'),
 	(28, 18, 2, '2026-02-08 02:57:25', '2026-02-08 02:57:25'),
 	(112, 20, 1, '2026-02-24 21:02:50', '2026-02-24 21:02:50'),
-	(113, 20, 2, '2026-02-24 21:02:50', '2026-02-24 21:02:50'),
-	(126, 21, 1, '2026-02-25 16:46:57', '2026-02-25 16:46:57'),
-	(127, 21, 2, '2026-02-25 16:46:57', '2026-02-25 16:46:57');
+	(113, 20, 2, '2026-02-24 21:02:50', '2026-02-24 21:02:50');
 /*!40000 ALTER TABLE `card_recharge_sale_department` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_recharge_sale_store 结构
@@ -549,9 +546,7 @@ CREATE TABLE IF NOT EXISTS `card_recharge_sale_store` (
 INSERT INTO `card_recharge_sale_store` (`id`, `recharge_id`, `store_id`) VALUES
 	(1, 1, 2),
 	(48, 20, 1),
-	(49, 20, 2),
-	(62, 21, 1),
-	(63, 21, 2);
+	(49, 20, 2);
 /*!40000 ALTER TABLE `card_recharge_sale_store` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_supplier 结构
@@ -590,18 +585,102 @@ CREATE TABLE IF NOT EXISTS `card_time` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `company_id` int(10) unsigned DEFAULT NULL COMMENT '所属公司ID',
   `card_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '卡名称',
+  `card_code` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '卡编码',
+  `original_price` decimal(10,2) DEFAULT '0.00' COMMENT '原价',
   `valid_days` int(11) NOT NULL DEFAULT '0' COMMENT '有效期(天)',
+  `valid_type` tinyint(1) DEFAULT '1' COMMENT '有效期类型:1=固定天数,2=自定义',
   `price` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '价格',
+  `use_rule_type` tinyint(1) DEFAULT '1' COMMENT '使用规则:1=不限次数,2=限制总次数,3=限制频率',
   `isDelete` tinyint(1) DEFAULT '0' COMMENT '是否删除',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `max_use_count` int(11) DEFAULT NULL COMMENT '最大使用次数（NULL表示无限制）',
+  `use_interval` int(11) DEFAULT NULL COMMENT '使用间隔（单位小时，NULL表示无限制）',
+  `use_type` tinyint(1) DEFAULT '1' COMMENT '使用类型：1无门槛, 2限次数, 3限频次, 4组合限制',
+  `status` tinyint(1) DEFAULT '1' COMMENT '状态：1正常, 2暂停, 3过期, 4已用完',
+  `start_time` datetime DEFAULT NULL COMMENT '生效时间',
+  `end_time` datetime DEFAULT NULL COMMENT '过期时间',
+  `description` text COLLATE utf8mb4_unicode_ci COMMENT '描述',
+  `remark` text COLLATE utf8mb4_unicode_ci COMMENT '备注',
+  `min_recharge_amount` decimal(10,2) DEFAULT '0.00' COMMENT '最低充值金额',
+  `is_modifiable` tinyint(1) DEFAULT '0' COMMENT '是否可修改',
+  `is_expire_invalid` tinyint(1) DEFAULT '1' COMMENT '是否过期作废',
+  `is_gift_forbidden` tinyint(1) DEFAULT '0' COMMENT '是否禁止赠送',
+  `last_use_time` datetime DEFAULT NULL COMMENT '最后使用时间',
+  `pause_start_time` datetime DEFAULT NULL COMMENT '暂停开始时间',
+  `pause_end_time` datetime DEFAULT NULL COMMENT '暂停结束时间',
+  `pause_days` int(11) DEFAULT '0' COMMENT '已暂停天数',
+  `total_pause_days` int(11) DEFAULT '0' COMMENT '累计暂停天数',
+  `interval_hours` int(11) DEFAULT NULL COMMENT '使用间隔小时数',
+  `project_bind_type` tinyint(1) DEFAULT '1' COMMENT '项目绑定类型:1=单选,2=多选,3=全店通用',
+  `customer_count` int(11) DEFAULT '0' COMMENT '已办理顾客数',
+  `online_time` datetime DEFAULT NULL COMMENT '上线时间',
+  `offline_time` datetime DEFAULT NULL COMMENT '下线时间',
+  `sale_store_ids` text COLLATE utf8mb4_unicode_ci COMMENT '限定销售分店(JSON数组)',
+  `consume_store_ids` text COLLATE utf8mb4_unicode_ci COMMENT '限定消费分店(JSON数组)',
+  `sale_department_ids` text COLLATE utf8mb4_unicode_ci COMMENT '限定销售部门(JSON数组)',
+  `consume_department_ids` text COLLATE utf8mb4_unicode_ci COMMENT '限定消费部门(JSON数组)',
   PRIMARY KEY (`id`),
-  KEY `idx_company_id` (`company_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='时效卡表';
+  KEY `idx_company_id` (`company_id`),
+  KEY `idx_end_time` (`end_time`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='时效卡表';
 
 -- 正在导出表  mydream.card_time 的数据：~0 rows (大约)
 /*!40000 ALTER TABLE `card_time` DISABLE KEYS */;
+INSERT INTO `card_time` (`id`, `company_id`, `card_name`, `card_code`, `original_price`, `valid_days`, `valid_type`, `price`, `use_rule_type`, `isDelete`, `created_at`, `updated_at`, `max_use_count`, `use_interval`, `use_type`, `status`, `start_time`, `end_time`, `description`, `remark`, `min_recharge_amount`, `is_modifiable`, `is_expire_invalid`, `is_gift_forbidden`, `last_use_time`, `pause_start_time`, `pause_end_time`, `pause_days`, `total_pause_days`, `interval_hours`, `project_bind_type`, `customer_count`, `online_time`, `offline_time`, `sale_store_ids`, `consume_store_ids`, `sale_department_ids`, `consume_department_ids`) VALUES
+	(1, 2, '测试时效卡', 'CSSXK', 9800.00, 200, 1, 6800.00, 1, 0, '2026-02-27 14:27:23', '2026-02-27 18:55:50', 3, NULL, 1, 1, NULL, NULL, '等等发撒的', '发多少', 0.00, 0, 1, 0, NULL, NULL, NULL, 0, 0, 24, 1, 0, '2026-02-27 14:27:01', '2026-02-28 00:00:00', '[]', '[]', '[]', '[]');
 /*!40000 ALTER TABLE `card_time` ENABLE KEYS */;
+
+-- 导出  表 mydream.card_time_product 结构
+CREATE TABLE IF NOT EXISTS `card_time_product` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `company_id` int(10) unsigned DEFAULT NULL COMMENT '公司ID',
+  `time_card_id` int(10) unsigned NOT NULL COMMENT '时效卡ID',
+  `product_id` int(10) unsigned NOT NULL COMMENT '产品ID',
+  `times` int(11) NOT NULL DEFAULT '1' COMMENT '数量',
+  `unit_price` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '单价',
+  `total_price` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '总价',
+  `manual_salary` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '手工费',
+  `isDelete` tinyint(1) DEFAULT '0' COMMENT '是否删除',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_time_card_id` (`time_card_id`),
+  KEY `idx_product_id` (`product_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='时效卡包含产品表';
+
+-- 正在导出表  mydream.card_time_product 的数据：~0 rows (大约)
+/*!40000 ALTER TABLE `card_time_product` DISABLE KEYS */;
+INSERT INTO `card_time_product` (`id`, `company_id`, `time_card_id`, `product_id`, `times`, `unit_price`, `total_price`, `manual_salary`, `isDelete`, `created_at`, `updated_at`) VALUES
+	(1, 2, 1, 1, 1, 390.00, 390.00, 0.00, 0, '2026-02-27 14:27:23', '2026-02-27 18:55:50');
+/*!40000 ALTER TABLE `card_time_product` ENABLE KEYS */;
+
+-- 导出  表 mydream.card_time_project 结构
+CREATE TABLE IF NOT EXISTS `card_time_project` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `company_id` int(10) unsigned DEFAULT NULL COMMENT '公司ID',
+  `time_card_id` int(10) unsigned NOT NULL COMMENT '时效卡ID',
+  `project_id` int(10) unsigned NOT NULL COMMENT '项目ID',
+  `times` int(11) NOT NULL DEFAULT '1' COMMENT '次数',
+  `unit_price` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '单价',
+  `total_price` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '总价',
+  `consume` int(11) NOT NULL DEFAULT '0' COMMENT '耗卡',
+  `manual_salary` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '手工费',
+  `isDelete` tinyint(1) DEFAULT '0' COMMENT '是否删除',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_time_card_id` (`time_card_id`),
+  KEY `idx_project_id` (`project_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='时效卡包含项目表';
+
+-- 正在导出表  mydream.card_time_project 的数据：~2 rows (大约)
+/*!40000 ALTER TABLE `card_time_project` DISABLE KEYS */;
+INSERT INTO `card_time_project` (`id`, `company_id`, `time_card_id`, `project_id`, `times`, `unit_price`, `total_price`, `consume`, `manual_salary`, `isDelete`, `created_at`, `updated_at`) VALUES
+	(1, 2, 1, 1, 5, 200.00, 1000.00, 0, 0.00, 0, '2026-02-27 14:27:23', '2026-02-27 18:55:50'),
+	(2, 2, 1, 2, 1, 298.00, 298.00, 0, 0.00, 1, '2026-02-27 14:27:23', '2026-02-27 18:55:50');
+/*!40000 ALTER TABLE `card_time_project` ENABLE KEYS */;
 
 -- 导出  表 mydream.cust_customer 结构
 CREATE TABLE IF NOT EXISTS `cust_customer` (
@@ -873,7 +952,7 @@ CREATE TABLE IF NOT EXISTS `sys_permission` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `code` (`code`),
   KEY `menu_id` (`menu_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=85 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='权限表';
+) ENGINE=InnoDB AUTO_INCREMENT=89 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='权限表';
 
 -- 正在导出表  mydream.sys_permission 的数据：~82 rows (大约)
 /*!40000 ALTER TABLE `sys_permission` DISABLE KEYS */;
@@ -959,7 +1038,11 @@ INSERT INTO `sys_permission` (`id`, `name`, `code`, `description`, `menu_id`, `s
 	(81, '查看产品分类', 'product:category:view', NULL, 31, 1, '2026-02-25 20:28:25', '2026-02-25 20:28:25', 2),
 	(82, '新增产品分类', 'product:category:add', NULL, 31, 1, '2026-02-25 20:28:25', '2026-02-25 20:28:25', 2),
 	(83, '编辑产品分类', 'product:category:edit', NULL, 31, 1, '2026-02-25 20:28:25', '2026-02-25 20:28:25', 2),
-	(84, '删除产品分类', 'product:category:delete', NULL, 31, 1, '2026-02-25 20:28:25', '2026-02-25 20:28:25', 2);
+	(84, '删除产品分类', 'product:category:delete', NULL, 31, 1, '2026-02-25 20:28:25', '2026-02-25 20:28:25', 2),
+	(85, '时效卡-查看', 'card:time:view', '', 20, 1, '2026-02-27 11:04:31', '2026-02-27 11:04:31', 2),
+	(86, '时效卡-添加', 'card:time:add', '', 20, 1, '2026-02-27 11:04:47', '2026-02-27 11:04:47', 2),
+	(87, '时效卡-编辑', 'card:time:edit', '', 20, 1, '2026-02-27 11:05:08', '2026-02-27 11:05:08', 2),
+	(88, '时效卡-删除', 'card:time:delete', '', 20, 1, '2026-02-27 11:05:28', '2026-02-27 11:05:28', 2);
 /*!40000 ALTER TABLE `sys_permission` ENABLE KEYS */;
 
 -- 导出  表 mydream.sys_position 结构
@@ -1081,7 +1164,7 @@ CREATE TABLE IF NOT EXISTS `sys_role_permission` (
   `permission_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `role_permission` (`role_id`,`permission_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=307 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色权限关联表';
+) ENGINE=InnoDB AUTO_INCREMENT=311 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色权限关联表';
 
 -- 正在导出表  mydream.sys_role_permission 的数据：~150 rows (大约)
 /*!40000 ALTER TABLE `sys_role_permission` DISABLE KEYS */;
@@ -1235,7 +1318,11 @@ INSERT INTO `sys_role_permission` (`id`, `role_id`, `permission_id`) VALUES
 	(303, 3, 81),
 	(304, 3, 82),
 	(305, 3, 83),
-	(306, 3, 84);
+	(306, 3, 84),
+	(307, 3, 85),
+	(308, 3, 86),
+	(309, 3, 87),
+	(310, 3, 88);
 /*!40000 ALTER TABLE `sys_role_permission` ENABLE KEYS */;
 
 -- 导出  表 mydream.sys_store 结构
@@ -1254,7 +1341,7 @@ CREATE TABLE IF NOT EXISTS `sys_store` (
   KEY `company_id` (`company_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='门店表';
 
--- 正在导出表  mydream.sys_store 的数据：~4 rows (大约)
+-- 正在导出表  mydream.sys_store 的数据：~0 rows (大约)
 /*!40000 ALTER TABLE `sys_store` DISABLE KEYS */;
 INSERT INTO `sys_store` (`id`, `store_name`, `phone`, `address`, `store_type`, `company_id`, `status`, `created_at`, `updated_at`, `isDelete`) VALUES
 	(1, '顺义店', '021-11111111', '上海市普陀区', '综合', 2, 1, '2026-01-30 18:38:01', '2026-01-30 18:40:26', 0),
@@ -1272,7 +1359,7 @@ CREATE TABLE IF NOT EXISTS `sys_store_department` (
   UNIQUE KEY `store_department` (`store_id`,`department_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='门店部门关联表';
 
--- 正在导出表  mydream.sys_store_department 的数据：~6 rows (大约)
+-- 正在导出表  mydream.sys_store_department 的数据：~0 rows (大约)
 /*!40000 ALTER TABLE `sys_store_department` DISABLE KEYS */;
 INSERT INTO `sys_store_department` (`id`, `store_id`, `department_id`) VALUES
 	(4, 1, 1),
@@ -1298,7 +1385,7 @@ CREATE TABLE IF NOT EXISTS `sys_user` (
   UNIQUE KEY `idx_sys_user_username` (`username`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户表';
 
--- 正在导出表  mydream.sys_user 的数据：~7 rows (大约)
+-- 正在导出表  mydream.sys_user 的数据：~0 rows (大约)
 /*!40000 ALTER TABLE `sys_user` DISABLE KEYS */;
 INSERT INTO `sys_user` (`id`, `username`, `password`, `nickname`, `avatar`, `status`, `created_at`, `updated_at`) VALUES
 	(1, 'admin', '$2y$10$S.T/5Z23QFHR5w47N/go1.XxQVCr.oXHRjTzl5FSpT2PkqYYyGE3u', '', '', 1, '2026-01-29 19:24:46', '2026-01-30 23:20:15'),
@@ -1332,7 +1419,7 @@ CREATE TABLE IF NOT EXISTS `sys_user_employee` (
   KEY `idx_sys_employee_department_id` (`department_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='员工表';
 
--- 正在导出表  mydream.sys_user_employee 的数据：~7 rows (大约)
+-- 正在导出表  mydream.sys_user_employee 的数据：~0 rows (大约)
 /*!40000 ALTER TABLE `sys_user_employee` DISABLE KEYS */;
 INSERT INTO `sys_user_employee` (`id`, `name`, `user_id`, `company_id`, `store_id`, `department_id`, `position_id`, `superior_id`, `status`, `created_at`, `updated_at`, `isDelete`) VALUES
 	(1, 'test', 2, 2, 2, 2, 62, 5, 1, '2026-01-30 18:55:03', '2026-02-06 17:54:24', 0),
@@ -1387,7 +1474,7 @@ CREATE TABLE IF NOT EXISTS `sys_user_role` (
   KEY `idx_sys_user_role_role_id` (`role_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户角色关联表';
 
--- 正在导出表  mydream.sys_user_role 的数据：~7 rows (大约)
+-- 正在导出表  mydream.sys_user_role 的数据：~0 rows (大约)
 /*!40000 ALTER TABLE `sys_user_role` DISABLE KEYS */;
 INSERT INTO `sys_user_role` (`id`, `user_id`, `role_id`) VALUES
 	(21, 1, 1),
@@ -1414,7 +1501,7 @@ CREATE TABLE IF NOT EXISTS `sys_user_store` (
   CONSTRAINT `fk_user_store_user` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=66 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户门店权限表';
 
--- 正在导出表  mydream.sys_user_store 的数据：~9 rows (大约)
+-- 正在导出表  mydream.sys_user_store 的数据：~0 rows (大约)
 /*!40000 ALTER TABLE `sys_user_store` DISABLE KEYS */;
 INSERT INTO `sys_user_store` (`id`, `user_id`, `store_id`) VALUES
 	(18, 1, 3),

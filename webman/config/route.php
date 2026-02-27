@@ -195,9 +195,13 @@ Route::group('/api/card-item', function () {
      * 时效卡管理
      */
     Route::get('/get-time-cards', 'app\controller\CardItemController@getTimeCards');
+    Route::get('/get-time-card-detail/{id}', 'app\controller\CardItemController@getTimeCardDetail');
     Route::post('/add-time-card', 'app\controller\CardItemController@addTimeCard');
     Route::put('/update-time-card/{id}', 'app\controller\CardItemController@updateTimeCard');
     Route::delete('/delete-time-card/{id}', 'app\controller\CardItemController@deleteTimeCard');
+    Route::post('/copy-time-card/{id}', 'app\controller\CardItemController@copyTimeCard');
+    Route::put('/toggle-time-card-status/{id}', 'app\controller\CardItemController@toggleTimeCardStatus');
+    Route::put('/batch-time-card-status', 'app\controller\CardItemController@batchTimeCardStatus');
     
     /**
      * 产品管理
