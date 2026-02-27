@@ -1,9 +1,46 @@
 <template>
   <div class="company-container">
-    <el-card>
+    <el-card class="main-card">
       <template #header>
         <div class="card-header">
           <span>公司管理</span>
+        </div>
+      </template>
+
+      <!-- 搜索栏 -->
+      <el-card v-if="hasAuth('company:view')" class="mb-4" shadow="never">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center space-x-4">
+            <span class="text-sm font-bold">公司名称</span>
+            <el-input
+              v-model="searchForm.companyName"
+              placeholder="请输入公司名称"
+              clearable
+              style="width: 200px"
+              @clear="handleSearch"
+              @keyup.enter="handleSearch"
+            />
+            <span class="text-sm font-bold">企业类型</span>
+            <el-select
+              v-model="searchForm.companyType"
+              placeholder="请选择企业类型"
+              clearable
+              style="width: 160px"
+            >
+              <el-option label="美容" value="美容" />
+              <el-option label="美发" value="美发" />
+              <el-option label="综合" value="综合" />
+              <el-option label="养生" value="养生" />
+            </el-select>
+            <el-button type="primary" @click="handleSearch">
+              <el-icon><Search /></el-icon>
+              搜索
+            </el-button>
+            <el-button @click="resetSearch">
+              <el-icon><Refresh /></el-icon>
+              重置
+            </el-button>
+          </div>
           <el-button
             v-if="hasAuth('company:add')"
             type="primary"
@@ -13,38 +50,10 @@
             新增公司
           </el-button>
         </div>
-      </template>
-
-      <!-- 搜索栏 -->
-      <div v-if="hasAuth('company:view')" class="search-bar">
-        <el-form :inline="true" :model="searchForm" class="mb-4">
-          <el-form-item label="公司名称">
-            <el-input
-              v-model="searchForm.companyName"
-              placeholder="请输入公司名称"
-            />
-          </el-form-item>
-          <el-form-item label="企业类型">
-            <el-select
-              v-model="searchForm.companyType"
-              placeholder="请选择企业类型"
-              style="width: 160px"
-            >
-              <el-option label="美容" value="美容" />
-              <el-option label="美发" value="美发" />
-              <el-option label="综合" value="综合" />
-              <el-option label="养生" value="养生" />
-            </el-select>
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="handleSearch">搜索</el-button>
-            <el-button @click="resetSearch">重置</el-button>
-          </el-form-item>
-        </el-form>
-      </div>
+      </el-card>
 
       <!-- 公司列表 -->
-      <div v-if="hasAuth('company:view')">
+      <div v-if="hasAuth('company:view')" class="company-list">
         <el-table v-loading="loading" :data="companyList" style="width: 100%">
           <el-table-column prop="id" label="ID" width="80" />
           <el-table-column prop="companyName" label="公司名称" />
@@ -164,7 +173,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from "vue";
-import { Plus, Edit, Delete } from "@element-plus/icons-vue";
+import { Plus, Edit, Delete, Search, Refresh } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import type { FormInstance, FormRules } from "element-plus";
 import { hasAuth } from "@/router/utils";
@@ -440,13 +449,13 @@ const handleSubmit = async () => {
   overflow: hidden;
 }
 
-.el-card {
+.main-card {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-:deep(.el-card__body) {
+.main-card :deep(.el-card__body) {
   padding: 16px;
   height: 100%;
   display: flex;
@@ -465,7 +474,7 @@ const handleSubmit = async () => {
 }
 
 /* 公司列表区域 */
-:deep(.el-card__body) > div:nth-child(2) {
+.company-list {
   flex: 1;
   min-height: 0;
   display: flex;
@@ -474,12 +483,12 @@ const handleSubmit = async () => {
 }
 
 /* 公司列表表格 */
-:deep(.el-card__body) .el-table {
+.company-list .el-table {
   flex: 1;
   min-height: 0;
 }
 
-:deep(.el-card__body) .el-table__body-wrapper {
+.company-list .el-table__body-wrapper {
   overflow: auto;
 }
 

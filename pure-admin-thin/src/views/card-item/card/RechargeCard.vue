@@ -31,44 +31,59 @@
 -->
 <template>
   <div class="recharge-card">
-    <!-- 标题和操作按钮区域 -->
-    <div class="mb-4 flex justify-between items-center">
-      <div class="flex items-center space-x-4">
-        <span class="text-lg font-medium">充值卡管理</span>
-        <el-input
-          v-model="searchKeyword"
-          placeholder="搜索卡名称/卡编码"
-          prefix-icon="Search"
-          clearable
-          style="width: 220px"
-          @clear="handleSearch"
-          @keyup.enter="handleSearch"
-        />
-        <el-button type="primary" @click="handleSearch">
-          <el-icon><Search /></el-icon>
-          搜索
+    <!-- 搜索和操作按钮区域 -->
+    <el-card class="mb-4" shadow="never">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-4">
+          <span class="text-sm font-bold">卡名称/编码</span>
+          <el-input
+            v-model="searchKeyword"
+            placeholder="请输入卡名称或编码"
+            prefix-icon="Search"
+            clearable
+            style="width: 220px"
+            @clear="handleSearch"
+            @keyup.enter="handleSearch"
+          />
+          <el-button type="primary" @click="handleSearch">
+            <el-icon><Search /></el-icon>
+            搜索
+          </el-button>
+          <el-button @click="resetSearch">
+            <el-icon><Refresh /></el-icon>
+            重置
+          </el-button>
+        </div>
+        <!-- 新增充值卡按钮 -->
+        <el-button type="primary" @click="handleAdd">
+          <el-icon><Plus /></el-icon>
+          新增充值卡
         </el-button>
       </div>
-      <!-- 新增充值卡按钮 -->
-      <el-button type="primary" @click="handleAdd">
-        <el-icon><Plus /></el-icon>
-        新增充值卡
-      </el-button>
-    </div>
+    </el-card>
     <!-- 充值卡数据表格 -->
     <div class="flex-1 min-h-0">
       <el-table v-loading="loading" :data="list" style="width: 100%" class="h-full" :max-height="`calc(100vh - 320px)`">
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column prop="cardName" label="充值卡名称" min-width="120" />
-        <el-table-column prop="cardCode" label="卡编码" min-width="100" />
-        <el-table-column label="充值金额/赠送金额" min-width="150">
+        <el-table-column label="充值金额" min-width="100">
           <template #default="scope">
-            {{ scope.row.amount }} / {{ scope.row.giftAmount }}
+            {{ scope.row.amount }}
           </template>
         </el-table-column>
-        <el-table-column label="项目折扣/产品折扣" min-width="160">
+        <el-table-column label="赠送金额" min-width="100">
           <template #default="scope">
-            {{ scope.row.projectDiscount }}% ({{ (scope.row.projectDiscount / 10).toFixed(1) }}折) / {{ scope.row.productDiscount }}% ({{ (scope.row.productDiscount / 10).toFixed(1) }}折)
+            {{ scope.row.giftAmount }}
+          </template>
+        </el-table-column>
+        <el-table-column label="项目折扣" min-width="90">
+          <template #default="scope">
+            {{ scope.row.projectDiscount }}%
+          </template>
+        </el-table-column>
+        <el-table-column label="产品折扣" min-width="90">
+          <template #default="scope">
+            {{ scope.row.productDiscount }}%
           </template>
         </el-table-column>
         <el-table-column label="耗卡率" min-width="80">
@@ -103,7 +118,7 @@
         </el-table-column>
       </el-table>
       <!-- 分页组件 -->
-      <div class="flex justify-between mt-4">
+      <div class="flex justify-end mt-4">
         <el-pagination
           v-model:current-page="pagination.currentPage"
           v-model:page-size="pagination.pageSize"
@@ -663,7 +678,7 @@
  * 4. 配赠产品管理 - 添加、删除配赠产品
  */
 import { ref, reactive, computed, onMounted } from "vue";
-import { Plus, Edit, Delete, Close, Check, Search } from "@element-plus/icons-vue";
+import { Plus, Edit, Delete, Close, Check, Search, Refresh } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { pinyin } from "pinyin-pro";
 import {
@@ -962,6 +977,15 @@ const getList = async () => {
  * 处理搜索
  */
 const handleSearch = () => {
+  pagination.currentPage = 1;
+  getList();
+};
+
+/**
+ * 重置搜索条件
+ */
+const resetSearch = () => {
+  searchKeyword.value = "";
   pagination.currentPage = 1;
   getList();
 };

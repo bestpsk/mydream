@@ -1,52 +1,56 @@
 <template>
   <div class="time-card">
-    <div class="mb-4 flex justify-between items-center">
-      <div class="search-bar flex-grow">
-        <el-form :inline="true" :model="searchForm" class="w-full">
-          <el-form-item label="卡名称/编码">
-            <el-input v-model="searchForm.keyword" placeholder="请输入卡名称或编码" clearable />
-          </el-form-item>
-          <el-form-item label="状态">
-            <el-select v-model="searchForm.status" placeholder="全部" clearable style="width: 120px">
-              <el-option label="启用" :value="1" />
-              <el-option label="禁用" :value="0" />
-            </el-select>
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="handleSearch">
-              <el-icon><Search /></el-icon>
-              搜索
-            </el-button>
-            <el-button @click="resetSearch">
-              <el-icon><Refresh /></el-icon>
-              重置
-            </el-button>
-          </el-form-item>
-        </el-form>
+    <el-card class="mb-4" shadow="never">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-4">
+          <span class="text-sm font-bold">卡名称/编码</span>
+          <el-input
+            v-model="searchForm.keyword"
+            placeholder="请输入卡名称或编码"
+            prefix-icon="Search"
+            clearable
+            style="width: 220px"
+            @clear="handleSearch"
+            @keyup.enter="handleSearch"
+          />
+          <span class="text-sm font-bold">状态</span>
+          <el-select v-model="searchForm.status" placeholder="全部" clearable style="width: 120px">
+            <el-option label="启用" :value="1" />
+            <el-option label="禁用" :value="0" />
+          </el-select>
+          <el-button type="primary" @click="handleSearch">
+            <el-icon><Search /></el-icon>
+            搜索
+          </el-button>
+          <el-button @click="resetSearch">
+            <el-icon><Refresh /></el-icon>
+            重置
+          </el-button>
+        </div>
+        <div class="flex space-x-2">
+          <el-button size="medium" v-if="hasAuth('card:time:add')" type="primary" @click="handleAdd">
+            <el-icon><Plus /></el-icon>
+            新增时效卡
+          </el-button>
+          <el-button 
+            v-if="hasAuth('card:time:edit')" 
+            type="success" 
+            :disabled="selectedRows.length === 0"
+            @click="handleBatchEnable"
+          >
+            批量启用
+          </el-button>
+          <el-button 
+            v-if="hasAuth('card:time:edit')" 
+            type="warning" 
+            :disabled="selectedRows.length === 0"
+            @click="handleBatchDisable"
+          >
+            批量禁用
+          </el-button>
+        </div>
       </div>
-      <div class="flex space-x-2">
-        <el-button v-if="hasAuth('card:time:add')" type="primary" @click="handleAdd">
-          <el-icon><Plus /></el-icon>
-          新增时效卡
-        </el-button>
-        <el-button 
-          v-if="hasAuth('card:time:edit')" 
-          type="success" 
-          :disabled="selectedRows.length === 0"
-          @click="handleBatchEnable"
-        >
-          批量启用
-        </el-button>
-        <el-button 
-          v-if="hasAuth('card:time:edit')" 
-          type="warning" 
-          :disabled="selectedRows.length === 0"
-          @click="handleBatchDisable"
-        >
-          批量禁用
-        </el-button>
-      </div>
-    </div>
+    </el-card>
 
     <div class="flex-1 min-h-0">
       <el-table 

@@ -12,6 +12,7 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 
 -- 导出  表 mydream.bedroom 结构
+DROP TABLE IF EXISTS `bedroom`;
 CREATE TABLE IF NOT EXISTS `bedroom` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `store_id` int(10) unsigned NOT NULL,
@@ -34,6 +35,7 @@ INSERT INTO `bedroom` (`id`, `store_id`, `room_name`, `bed_count`, `created_at`,
 /*!40000 ALTER TABLE `bedroom` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_package 结构
+DROP TABLE IF EXISTS `card_package`;
 CREATE TABLE IF NOT EXISTS `card_package` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `company_id` int(10) unsigned DEFAULT NULL COMMENT '所属公司ID',
@@ -72,6 +74,7 @@ INSERT INTO `card_package` (`id`, `company_id`, `card_name`, `original_price`, `
 /*!40000 ALTER TABLE `card_package` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_package_gift_product 结构
+DROP TABLE IF EXISTS `card_package_gift_product`;
 CREATE TABLE IF NOT EXISTS `card_package_gift_product` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `company_id` int(10) unsigned DEFAULT NULL,
@@ -94,6 +97,7 @@ CREATE TABLE IF NOT EXISTS `card_package_gift_product` (
 /*!40000 ALTER TABLE `card_package_gift_product` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_package_gift_project 结构
+DROP TABLE IF EXISTS `card_package_gift_project`;
 CREATE TABLE IF NOT EXISTS `card_package_gift_project` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `company_id` int(10) unsigned DEFAULT NULL,
@@ -119,6 +123,7 @@ INSERT INTO `card_package_gift_project` (`id`, `company_id`, `package_id`, `proj
 /*!40000 ALTER TABLE `card_package_gift_project` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_product 结构
+DROP TABLE IF EXISTS `card_product`;
 CREATE TABLE IF NOT EXISTS `card_product` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `company_id` int(10) unsigned DEFAULT NULL,
@@ -170,6 +175,7 @@ INSERT INTO `card_product` (`id`, `company_id`, `product_name`, `product_code`, 
 /*!40000 ALTER TABLE `card_product` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_product_category 结构
+DROP TABLE IF EXISTS `card_product_category`;
 CREATE TABLE IF NOT EXISTS `card_product_category` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `category_name` varchar(100) NOT NULL COMMENT '分类名称',
@@ -190,6 +196,7 @@ INSERT INTO `card_product_category` (`id`, `category_name`, `department_id`, `so
 /*!40000 ALTER TABLE `card_product_category` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_project 结构
+DROP TABLE IF EXISTS `card_project`;
 CREATE TABLE IF NOT EXISTS `card_project` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `company_id` int(10) unsigned DEFAULT NULL COMMENT '所属公司ID',
@@ -237,6 +244,7 @@ INSERT INTO `card_project` (`id`, `company_id`, `project_name`, `category_id`, `
 /*!40000 ALTER TABLE `card_project` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_project_category 结构
+DROP TABLE IF EXISTS `card_project_category`;
 CREATE TABLE IF NOT EXISTS `card_project_category` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `company_id` int(10) unsigned DEFAULT NULL COMMENT '所属公司ID',
@@ -270,6 +278,7 @@ INSERT INTO `card_project_category` (`id`, `company_id`, `category_name`, `sort`
 /*!40000 ALTER TABLE `card_project_category` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_project_ingredient 结构
+DROP TABLE IF EXISTS `card_project_ingredient`;
 CREATE TABLE IF NOT EXISTS `card_project_ingredient` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `company_id` int(11) NOT NULL,
@@ -292,6 +301,7 @@ CREATE TABLE IF NOT EXISTS `card_project_ingredient` (
 /*!40000 ALTER TABLE `card_project_ingredient` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_project_sub 结构
+DROP TABLE IF EXISTS `card_project_sub`;
 CREATE TABLE IF NOT EXISTS `card_project_sub` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `company_id` int(11) NOT NULL,
@@ -312,12 +322,13 @@ CREATE TABLE IF NOT EXISTS `card_project_sub` (
 /*!40000 ALTER TABLE `card_project_sub` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_recharge 结构
+DROP TABLE IF EXISTS `card_recharge`;
 CREATE TABLE IF NOT EXISTS `card_recharge` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `company_id` int(11) NOT NULL COMMENT '所属公司ID',
   `card_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '卡名称',
   `is_delete` tinyint(1) DEFAULT '0' COMMENT '是否删除',
-  `card_code` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '卡编码',
+  `card_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '卡编码',
   `created_at` datetime NOT NULL COMMENT '创建时间',
   `updated_at` datetime NOT NULL COMMENT '更新时间',
   `amount` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '金额',
@@ -332,7 +343,7 @@ CREATE TABLE IF NOT EXISTS `card_recharge` (
   `expire_type` int(11) NOT NULL DEFAULT '3' COMMENT '过期类型',
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '描述',
   `remark` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '备注',
-  `status` tinyint(1) NOT NULL DEFAULT '1',
+  `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '状态',
   `is_modifiable` tinyint(1) NOT NULL DEFAULT '1' COMMENT '是否可修改',
   `is_limit_once` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否限制一次',
   `is_expire_invalid` tinyint(1) NOT NULL DEFAULT '1' COMMENT '过期是否失效',
@@ -363,12 +374,13 @@ INSERT INTO `card_recharge` (`id`, `company_id`, `card_name`, `is_delete`, `card
 	(16, 2, '大萨达', 1, NULL, '2026-02-08 02:56:17', '2026-02-08 02:56:17', 4444.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
 	(17, 2, '实打实', 1, NULL, '2026-02-08 02:56:47', '2026-02-08 02:56:47', 5555.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
 	(18, 2, '实打实', 1, NULL, '2026-02-08 02:57:24', '2026-02-08 02:57:24', 5555.00, 0.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '', '', 0, 1, 0, 1, 1, 0),
-	(19, 2, '实打实', 0, NULL, '2026-02-08 02:58:11', '2026-02-24 18:19:58', 5555.00, 0.00, 100.00, 100.00, 100, 0.00, '2026-02-02 16:00:00', '2026-02-26 16:00:00', NULL, 3, '11111', '2222', 1, 0, 1, 1, 1, 1),
-	(20, 2, '测试1', 0, NULL, '2026-02-24 16:58:02', '2026-02-24 21:02:50', 100.00, 10.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '11', '12', 1, 0, 0, 1, 1, 0),
-	(21, 2, '琴琴', 0, NULL, '2026-02-24 21:25:12', '2026-02-27 18:52:41', 5980.00, 1000.00, 100.00, 100.00, 100, 0.00, '2026-02-24 16:00:00', '2026-03-03 16:00:00', NULL, 1, '113', '221', 1, 0, 0, 1, 1, 0);
+	(19, 2, '实打实1', 0, NULL, '2026-02-08 02:58:11', '2026-02-27 21:54:44', 5555.00, 0.00, 100.00, 100.00, 100, 0.00, '2026-02-02 16:00:00', '2026-02-26 16:00:00', NULL, 3, '11111', '2222', 1, 0, 1, 1, 1, 1),
+	(20, 2, '测试1', 0, NULL, '2026-02-24 16:58:02', '2026-02-27 21:54:37', 100.00, 10.00, 100.00, 100.00, 100, 0.00, NULL, NULL, NULL, 3, '11', '12', 1, 0, 0, 1, 1, 0),
+	(21, 2, '琴琴1', 0, 'QQ', '2026-02-24 21:25:12', '2026-02-27 22:18:34', 5980.00, 1000.00, 100.00, 100.00, 100, 0.00, '2026-02-24 16:00:00', '2026-03-03 16:00:00', NULL, 1, '113', '221', 1, 0, 0, 1, 1, 0);
 /*!40000 ALTER TABLE `card_recharge` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_recharge_consume_department 结构
+DROP TABLE IF EXISTS `card_recharge_consume_department`;
 CREATE TABLE IF NOT EXISTS `card_recharge_consume_department` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `recharge_id` int(11) NOT NULL COMMENT '充值卡ID',
@@ -378,9 +390,9 @@ CREATE TABLE IF NOT EXISTS `card_recharge_consume_department` (
   PRIMARY KEY (`id`),
   KEY `idx_recharge_id` (`recharge_id`),
   KEY `idx_department_id` (`department_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=127 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='充值卡消费部门关联表';
+) ENGINE=InnoDB AUTO_INCREMENT=129 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='充值卡消费部门关联表';
 
--- 正在导出表  mydream.card_recharge_consume_department 的数据：~30 rows (大约)
+-- 正在导出表  mydream.card_recharge_consume_department 的数据：~28 rows (大约)
 /*!40000 ALTER TABLE `card_recharge_consume_department` DISABLE KEYS */;
 INSERT INTO `card_recharge_consume_department` (`id`, `recharge_id`, `department_id`, `created_at`, `updated_at`) VALUES
 	(1, 5, 1, '2026-02-08 02:51:41', '2026-02-08 02:51:41'),
@@ -409,11 +421,12 @@ INSERT INTO `card_recharge_consume_department` (`id`, `recharge_id`, `department
 	(26, 17, 2, '2026-02-08 02:56:47', '2026-02-08 02:56:47'),
 	(27, 18, 1, '2026-02-08 02:57:25', '2026-02-08 02:57:25'),
 	(28, 18, 2, '2026-02-08 02:57:25', '2026-02-08 02:57:25'),
-	(111, 20, 1, '2026-02-24 21:02:50', '2026-02-24 21:02:50'),
-	(112, 20, 2, '2026-02-24 21:02:50', '2026-02-24 21:02:50');
+	(127, 20, 1, '2026-02-27 21:54:37', '2026-02-27 21:54:37'),
+	(128, 20, 2, '2026-02-27 21:54:37', '2026-02-27 21:54:37');
 /*!40000 ALTER TABLE `card_recharge_consume_department` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_recharge_consume_store 结构
+DROP TABLE IF EXISTS `card_recharge_consume_store`;
 CREATE TABLE IF NOT EXISTS `card_recharge_consume_store` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `recharge_id` int(10) unsigned NOT NULL,
@@ -423,17 +436,18 @@ CREATE TABLE IF NOT EXISTS `card_recharge_consume_store` (
   KEY `idx_recharge_id` (`recharge_id`),
   KEY `idx_store_id` (`store_id`),
   CONSTRAINT `card_recharge_consume_store_ibfk_1` FOREIGN KEY (`recharge_id`) REFERENCES `card_recharge` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='充值卡消费分店表';
+) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='充值卡消费分店表';
 
--- 正在导出表  mydream.card_recharge_consume_store 的数据：~5 rows (大约)
+-- 正在导出表  mydream.card_recharge_consume_store 的数据：~3 rows (大约)
 /*!40000 ALTER TABLE `card_recharge_consume_store` DISABLE KEYS */;
 INSERT INTO `card_recharge_consume_store` (`id`, `recharge_id`, `store_id`) VALUES
 	(1, 1, 1),
-	(47, 20, 1),
-	(48, 20, 2);
+	(63, 20, 1),
+	(64, 20, 2);
 /*!40000 ALTER TABLE `card_recharge_consume_store` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_recharge_gift_product 结构
+DROP TABLE IF EXISTS `card_recharge_gift_product`;
 CREATE TABLE IF NOT EXISTS `card_recharge_gift_product` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `recharge_id` int(10) unsigned NOT NULL,
@@ -449,16 +463,17 @@ CREATE TABLE IF NOT EXISTS `card_recharge_gift_product` (
   KEY `idx_recharge_id` (`recharge_id`),
   KEY `idx_product_id` (`product_id`),
   CONSTRAINT `card_recharge_gift_product_ibfk_1` FOREIGN KEY (`recharge_id`) REFERENCES `card_recharge` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='配赠产品表';
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='配赠产品表';
 
--- 正在导出表  mydream.card_recharge_gift_product 的数据：~0 rows (大约)
+-- 正在导出表  mydream.card_recharge_gift_product 的数据：~2 rows (大约)
 /*!40000 ALTER TABLE `card_recharge_gift_product` DISABLE KEYS */;
 INSERT INTO `card_recharge_gift_product` (`id`, `recharge_id`, `product_id`, `times`, `unit_price`, `total_price`, `consume`, `manual_salary`, `created_at`, `updated_at`) VALUES
 	(1, 4, 1, 5, 200.00, 0.00, 0.00, 20.00, '2026-02-08 00:55:35', '2026-02-08 00:55:35'),
-	(3, 21, 1, 2, 390.00, 780.00, 0.00, 0.00, '2026-02-27 18:52:41', '2026-02-27 18:52:41');
+	(7, 21, 1, 2, 390.00, 780.00, 0.00, 0.00, '2026-02-27 22:18:34', '2026-02-27 22:18:34');
 /*!40000 ALTER TABLE `card_recharge_gift_product` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_recharge_gift_project 结构
+DROP TABLE IF EXISTS `card_recharge_gift_project`;
 CREATE TABLE IF NOT EXISTS `card_recharge_gift_project` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `recharge_id` int(10) unsigned NOT NULL,
@@ -474,17 +489,18 @@ CREATE TABLE IF NOT EXISTS `card_recharge_gift_project` (
   KEY `idx_recharge_id` (`recharge_id`),
   KEY `idx_project_id` (`project_id`),
   CONSTRAINT `card_recharge_gift_project_ibfk_1` FOREIGN KEY (`recharge_id`) REFERENCES `card_recharge` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='配赠项目表';
+) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='配赠项目表';
 
 -- 正在导出表  mydream.card_recharge_gift_project 的数据：~3 rows (大约)
 /*!40000 ALTER TABLE `card_recharge_gift_project` DISABLE KEYS */;
 INSERT INTO `card_recharge_gift_project` (`id`, `recharge_id`, `project_id`, `times`, `unit_price`, `total_price`, `consume`, `manual_salary`, `created_at`, `updated_at`) VALUES
 	(1, 4, 1, 10, 100.00, 0.00, 50.00, 10.00, '2026-02-08 00:55:35', '2026-02-08 00:55:35'),
-	(32, 20, 1, 1, 198.00, 198.00, 2.00, 21.00, '2026-02-24 21:02:50', '2026-02-24 21:02:50'),
-	(45, 21, 2, 3, 498.00, 1494.00, 0.00, 0.00, '2026-02-27 18:52:41', '2026-02-27 18:52:41');
+	(47, 20, 1, 1, 198.00, 198.00, 2.00, 21.00, '2026-02-27 21:54:37', '2026-02-27 21:54:37'),
+	(50, 21, 2, 3, 498.00, 1494.00, 0.00, 0.00, '2026-02-27 22:18:34', '2026-02-27 22:18:34');
 /*!40000 ALTER TABLE `card_recharge_gift_project` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_recharge_sale_department 结构
+DROP TABLE IF EXISTS `card_recharge_sale_department`;
 CREATE TABLE IF NOT EXISTS `card_recharge_sale_department` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `recharge_id` int(11) NOT NULL COMMENT '充值卡ID',
@@ -494,9 +510,9 @@ CREATE TABLE IF NOT EXISTS `card_recharge_sale_department` (
   PRIMARY KEY (`id`),
   KEY `idx_recharge_id` (`recharge_id`),
   KEY `idx_department_id` (`department_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=128 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='充值卡销售部门关联表';
+) ENGINE=InnoDB AUTO_INCREMENT=130 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='充值卡销售部门关联表';
 
--- 正在导出表  mydream.card_recharge_sale_department 的数据：~30 rows (大约)
+-- 正在导出表  mydream.card_recharge_sale_department 的数据：~28 rows (大约)
 /*!40000 ALTER TABLE `card_recharge_sale_department` DISABLE KEYS */;
 INSERT INTO `card_recharge_sale_department` (`id`, `recharge_id`, `department_id`, `created_at`, `updated_at`) VALUES
 	(1, 5, 1, '2026-02-08 02:51:41', '2026-02-08 02:51:41'),
@@ -525,11 +541,12 @@ INSERT INTO `card_recharge_sale_department` (`id`, `recharge_id`, `department_id
 	(26, 17, 2, '2026-02-08 02:56:47', '2026-02-08 02:56:47'),
 	(27, 18, 1, '2026-02-08 02:57:25', '2026-02-08 02:57:25'),
 	(28, 18, 2, '2026-02-08 02:57:25', '2026-02-08 02:57:25'),
-	(112, 20, 1, '2026-02-24 21:02:50', '2026-02-24 21:02:50'),
-	(113, 20, 2, '2026-02-24 21:02:50', '2026-02-24 21:02:50');
+	(128, 20, 1, '2026-02-27 21:54:37', '2026-02-27 21:54:37'),
+	(129, 20, 2, '2026-02-27 21:54:37', '2026-02-27 21:54:37');
 /*!40000 ALTER TABLE `card_recharge_sale_department` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_recharge_sale_store 结构
+DROP TABLE IF EXISTS `card_recharge_sale_store`;
 CREATE TABLE IF NOT EXISTS `card_recharge_sale_store` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `recharge_id` int(10) unsigned NOT NULL,
@@ -539,17 +556,18 @@ CREATE TABLE IF NOT EXISTS `card_recharge_sale_store` (
   KEY `idx_recharge_id` (`recharge_id`),
   KEY `idx_store_id` (`store_id`),
   CONSTRAINT `card_recharge_sale_store_ibfk_1` FOREIGN KEY (`recharge_id`) REFERENCES `card_recharge` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='充值卡销售分店表';
+) ENGINE=InnoDB AUTO_INCREMENT=66 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='充值卡销售分店表';
 
--- 正在导出表  mydream.card_recharge_sale_store 的数据：~5 rows (大约)
+-- 正在导出表  mydream.card_recharge_sale_store 的数据：~3 rows (大约)
 /*!40000 ALTER TABLE `card_recharge_sale_store` DISABLE KEYS */;
 INSERT INTO `card_recharge_sale_store` (`id`, `recharge_id`, `store_id`) VALUES
 	(1, 1, 2),
-	(48, 20, 1),
-	(49, 20, 2);
+	(64, 20, 1),
+	(65, 20, 2);
 /*!40000 ALTER TABLE `card_recharge_sale_store` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_supplier 结构
+DROP TABLE IF EXISTS `card_supplier`;
 CREATE TABLE IF NOT EXISTS `card_supplier` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `company_id` int(10) unsigned DEFAULT NULL COMMENT '所属公司ID',
@@ -581,11 +599,12 @@ INSERT INTO `card_supplier` (`id`, `company_id`, `supplier_name`, `contact`, `ph
 /*!40000 ALTER TABLE `card_supplier` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_time 结构
+DROP TABLE IF EXISTS `card_time`;
 CREATE TABLE IF NOT EXISTS `card_time` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `company_id` int(10) unsigned DEFAULT NULL COMMENT '所属公司ID',
   `card_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '卡名称',
-  `card_code` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '卡编码',
+  `card_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '卡编码',
   `original_price` decimal(10,2) DEFAULT '0.00' COMMENT '原价',
   `valid_days` int(11) NOT NULL DEFAULT '0' COMMENT '有效期(天)',
   `valid_type` tinyint(1) DEFAULT '1' COMMENT '有效期类型:1=固定天数,2=自定义',
@@ -600,8 +619,8 @@ CREATE TABLE IF NOT EXISTS `card_time` (
   `status` tinyint(1) DEFAULT '1' COMMENT '状态：1正常, 2暂停, 3过期, 4已用完',
   `start_time` datetime DEFAULT NULL COMMENT '生效时间',
   `end_time` datetime DEFAULT NULL COMMENT '过期时间',
-  `description` text COLLATE utf8mb4_unicode_ci COMMENT '描述',
-  `remark` text COLLATE utf8mb4_unicode_ci COMMENT '备注',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '描述',
+  `remark` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '备注',
   `min_recharge_amount` decimal(10,2) DEFAULT '0.00' COMMENT '最低充值金额',
   `is_modifiable` tinyint(1) DEFAULT '0' COMMENT '是否可修改',
   `is_expire_invalid` tinyint(1) DEFAULT '1' COMMENT '是否过期作废',
@@ -616,10 +635,10 @@ CREATE TABLE IF NOT EXISTS `card_time` (
   `customer_count` int(11) DEFAULT '0' COMMENT '已办理顾客数',
   `online_time` datetime DEFAULT NULL COMMENT '上线时间',
   `offline_time` datetime DEFAULT NULL COMMENT '下线时间',
-  `sale_store_ids` text COLLATE utf8mb4_unicode_ci COMMENT '限定销售分店(JSON数组)',
-  `consume_store_ids` text COLLATE utf8mb4_unicode_ci COMMENT '限定消费分店(JSON数组)',
-  `sale_department_ids` text COLLATE utf8mb4_unicode_ci COMMENT '限定销售部门(JSON数组)',
-  `consume_department_ids` text COLLATE utf8mb4_unicode_ci COMMENT '限定消费部门(JSON数组)',
+  `sale_store_ids` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '限定销售分店(JSON数组)',
+  `consume_store_ids` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '限定消费分店(JSON数组)',
+  `sale_department_ids` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '限定销售部门(JSON数组)',
+  `consume_department_ids` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT '限定消费部门(JSON数组)',
   PRIMARY KEY (`id`),
   KEY `idx_company_id` (`company_id`),
   KEY `idx_end_time` (`end_time`),
@@ -633,6 +652,7 @@ INSERT INTO `card_time` (`id`, `company_id`, `card_name`, `card_code`, `original
 /*!40000 ALTER TABLE `card_time` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_time_product 结构
+DROP TABLE IF EXISTS `card_time_product`;
 CREATE TABLE IF NOT EXISTS `card_time_product` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `company_id` int(10) unsigned DEFAULT NULL COMMENT '公司ID',
@@ -657,6 +677,7 @@ INSERT INTO `card_time_product` (`id`, `company_id`, `time_card_id`, `product_id
 /*!40000 ALTER TABLE `card_time_product` ENABLE KEYS */;
 
 -- 导出  表 mydream.card_time_project 结构
+DROP TABLE IF EXISTS `card_time_project`;
 CREATE TABLE IF NOT EXISTS `card_time_project` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `company_id` int(10) unsigned DEFAULT NULL COMMENT '公司ID',
@@ -683,6 +704,7 @@ INSERT INTO `card_time_project` (`id`, `company_id`, `time_card_id`, `project_id
 /*!40000 ALTER TABLE `card_time_project` ENABLE KEYS */;
 
 -- 导出  表 mydream.cust_customer 结构
+DROP TABLE IF EXISTS `cust_customer`;
 CREATE TABLE IF NOT EXISTS `cust_customer` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `store_id` int(11) NOT NULL COMMENT '所属门店ID',
@@ -739,6 +761,7 @@ INSERT INTO `cust_customer` (`id`, `store_id`, `department_id`, `member_card`, `
 /*!40000 ALTER TABLE `cust_customer` ENABLE KEYS */;
 
 -- 导出  表 mydream.cust_customer_department 结构
+DROP TABLE IF EXISTS `cust_customer_department`;
 CREATE TABLE IF NOT EXISTS `cust_customer_department` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `customer_id` int(11) NOT NULL,
@@ -773,6 +796,7 @@ INSERT INTO `cust_customer_department` (`id`, `customer_id`, `department_id`, `c
 /*!40000 ALTER TABLE `cust_customer_department` ENABLE KEYS */;
 
 -- 导出  表 mydream.cust_customer_manager 结构
+DROP TABLE IF EXISTS `cust_customer_manager`;
 CREATE TABLE IF NOT EXISTS `cust_customer_manager` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `customer_id` int(10) unsigned NOT NULL,
@@ -796,6 +820,7 @@ INSERT INTO `cust_customer_manager` (`id`, `customer_id`, `manager_id`, `created
 /*!40000 ALTER TABLE `cust_customer_manager` ENABLE KEYS */;
 
 -- 导出  表 mydream.cust_customer_service_staff 结构
+DROP TABLE IF EXISTS `cust_customer_service_staff`;
 CREATE TABLE IF NOT EXISTS `cust_customer_service_staff` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `customer_id` int(10) unsigned NOT NULL,
@@ -821,6 +846,7 @@ INSERT INTO `cust_customer_service_staff` (`id`, `customer_id`, `service_staff_i
 /*!40000 ALTER TABLE `cust_customer_service_staff` ENABLE KEYS */;
 
 -- 导出  表 mydream.sys_company 结构
+DROP TABLE IF EXISTS `sys_company`;
 CREATE TABLE IF NOT EXISTS `sys_company` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `code` varchar(20) NOT NULL DEFAULT '',
@@ -849,6 +875,7 @@ INSERT INTO `sys_company` (`id`, `code`, `company_name`, `boss`, `phone`, `addre
 /*!40000 ALTER TABLE `sys_company` ENABLE KEYS */;
 
 -- 导出  表 mydream.sys_department 结构
+DROP TABLE IF EXISTS `sys_department`;
 CREATE TABLE IF NOT EXISTS `sys_department` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `dept_name` varchar(50) NOT NULL,
@@ -878,6 +905,7 @@ INSERT INTO `sys_department` (`id`, `dept_name`, `parent_id`, `sort`, `company_i
 /*!40000 ALTER TABLE `sys_department` ENABLE KEYS */;
 
 -- 导出  表 mydream.sys_employee_position 结构
+DROP TABLE IF EXISTS `sys_employee_position`;
 CREATE TABLE IF NOT EXISTS `sys_employee_position` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `employee_id` int(10) unsigned NOT NULL,
@@ -891,6 +919,7 @@ CREATE TABLE IF NOT EXISTS `sys_employee_position` (
 /*!40000 ALTER TABLE `sys_employee_position` ENABLE KEYS */;
 
 -- 导出  表 mydream.sys_menu 结构
+DROP TABLE IF EXISTS `sys_menu`;
 CREATE TABLE IF NOT EXISTS `sys_menu` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
@@ -939,6 +968,7 @@ INSERT INTO `sys_menu` (`id`, `name`, `path`, `component`, `redirect`, `parent_i
 /*!40000 ALTER TABLE `sys_menu` ENABLE KEYS */;
 
 -- 导出  表 mydream.sys_permission 结构
+DROP TABLE IF EXISTS `sys_permission`;
 CREATE TABLE IF NOT EXISTS `sys_permission` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
@@ -954,7 +984,7 @@ CREATE TABLE IF NOT EXISTS `sys_permission` (
   KEY `menu_id` (`menu_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=89 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='权限表';
 
--- 正在导出表  mydream.sys_permission 的数据：~82 rows (大约)
+-- 正在导出表  mydream.sys_permission 的数据：~86 rows (大约)
 /*!40000 ALTER TABLE `sys_permission` DISABLE KEYS */;
 INSERT INTO `sys_permission` (`id`, `name`, `code`, `description`, `menu_id`, `status`, `created_at`, `updated_at`, `type`) VALUES
 	(1, '公司管理-查看', 'company:view', NULL, 2, 1, '2026-01-29 19:24:46', '2026-01-31 21:38:11', 2),
@@ -1046,6 +1076,7 @@ INSERT INTO `sys_permission` (`id`, `name`, `code`, `description`, `menu_id`, `s
 /*!40000 ALTER TABLE `sys_permission` ENABLE KEYS */;
 
 -- 导出  表 mydream.sys_position 结构
+DROP TABLE IF EXISTS `sys_position`;
 CREATE TABLE IF NOT EXISTS `sys_position` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `position_name` varchar(50) NOT NULL,
@@ -1080,6 +1111,7 @@ INSERT INTO `sys_position` (`id`, `position_name`, `dept_id`, `sort`, `company_i
 /*!40000 ALTER TABLE `sys_position` ENABLE KEYS */;
 
 -- 导出  表 mydream.sys_role 结构
+DROP TABLE IF EXISTS `sys_role`;
 CREATE TABLE IF NOT EXISTS `sys_role` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
@@ -1103,6 +1135,7 @@ INSERT INTO `sys_role` (`id`, `name`, `is_super`, `company_id`, `description`, `
 /*!40000 ALTER TABLE `sys_role` ENABLE KEYS */;
 
 -- 导出  表 mydream.sys_role_menu 结构
+DROP TABLE IF EXISTS `sys_role_menu`;
 CREATE TABLE IF NOT EXISTS `sys_role_menu` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `role_id` int(10) unsigned NOT NULL,
@@ -1158,6 +1191,7 @@ INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`) VALUES
 /*!40000 ALTER TABLE `sys_role_menu` ENABLE KEYS */;
 
 -- 导出  表 mydream.sys_role_permission 结构
+DROP TABLE IF EXISTS `sys_role_permission`;
 CREATE TABLE IF NOT EXISTS `sys_role_permission` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `role_id` int(10) unsigned NOT NULL,
@@ -1166,7 +1200,7 @@ CREATE TABLE IF NOT EXISTS `sys_role_permission` (
   UNIQUE KEY `role_permission` (`role_id`,`permission_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=311 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色权限关联表';
 
--- 正在导出表  mydream.sys_role_permission 的数据：~150 rows (大约)
+-- 正在导出表  mydream.sys_role_permission 的数据：~154 rows (大约)
 /*!40000 ALTER TABLE `sys_role_permission` DISABLE KEYS */;
 INSERT INTO `sys_role_permission` (`id`, `role_id`, `permission_id`) VALUES
 	(115, 1, 1),
@@ -1326,6 +1360,7 @@ INSERT INTO `sys_role_permission` (`id`, `role_id`, `permission_id`) VALUES
 /*!40000 ALTER TABLE `sys_role_permission` ENABLE KEYS */;
 
 -- 导出  表 mydream.sys_store 结构
+DROP TABLE IF EXISTS `sys_store`;
 CREATE TABLE IF NOT EXISTS `sys_store` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `store_name` varchar(100) NOT NULL,
@@ -1351,6 +1386,7 @@ INSERT INTO `sys_store` (`id`, `store_name`, `phone`, `address`, `store_type`, `
 /*!40000 ALTER TABLE `sys_store` ENABLE KEYS */;
 
 -- 导出  表 mydream.sys_store_department 结构
+DROP TABLE IF EXISTS `sys_store_department`;
 CREATE TABLE IF NOT EXISTS `sys_store_department` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `store_id` int(10) unsigned NOT NULL,
@@ -1371,6 +1407,7 @@ INSERT INTO `sys_store_department` (`id`, `store_id`, `department_id`) VALUES
 /*!40000 ALTER TABLE `sys_store_department` ENABLE KEYS */;
 
 -- 导出  表 mydream.sys_user 结构
+DROP TABLE IF EXISTS `sys_user`;
 CREATE TABLE IF NOT EXISTS `sys_user` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(50) NOT NULL,
@@ -1398,6 +1435,7 @@ INSERT INTO `sys_user` (`id`, `username`, `password`, `nickname`, `avatar`, `sta
 /*!40000 ALTER TABLE `sys_user` ENABLE KEYS */;
 
 -- 导出  表 mydream.sys_user_employee 结构
+DROP TABLE IF EXISTS `sys_user_employee`;
 CREATE TABLE IF NOT EXISTS `sys_user_employee` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
@@ -1432,6 +1470,7 @@ INSERT INTO `sys_user_employee` (`id`, `name`, `user_id`, `company_id`, `store_i
 /*!40000 ALTER TABLE `sys_user_employee` ENABLE KEYS */;
 
 -- 导出  表 mydream.sys_user_profile 结构
+DROP TABLE IF EXISTS `sys_user_profile`;
 CREATE TABLE IF NOT EXISTS `sys_user_profile` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,
@@ -1464,6 +1503,7 @@ INSERT INTO `sys_user_profile` (`id`, `user_id`, `phone`, `email`, `birthday_sol
 /*!40000 ALTER TABLE `sys_user_profile` ENABLE KEYS */;
 
 -- 导出  表 mydream.sys_user_role 结构
+DROP TABLE IF EXISTS `sys_user_role`;
 CREATE TABLE IF NOT EXISTS `sys_user_role` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,
@@ -1487,6 +1527,7 @@ INSERT INTO `sys_user_role` (`id`, `user_id`, `role_id`) VALUES
 /*!40000 ALTER TABLE `sys_user_role` ENABLE KEYS */;
 
 -- 导出  表 mydream.sys_user_store 结构
+DROP TABLE IF EXISTS `sys_user_store`;
 CREATE TABLE IF NOT EXISTS `sys_user_store` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,

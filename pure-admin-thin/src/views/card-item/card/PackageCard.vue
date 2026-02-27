@@ -33,31 +33,35 @@
 <template>
   <div class="package-card">
     <!-- 搜索栏和操作按钮区域 -->
-    <div class="mb-4 flex justify-between items-center">
-      <!-- 套餐卡搜索表单 -->
-      <div class="search-bar flex-grow">
-        <el-form :inline="true" :model="searchForm" class="w-full">
-          <el-form-item label="卡名称/编码">
-            <el-input v-model="searchForm.keyword" placeholder="请输入卡名称或编码" clearable />
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="handleSearch">
-              <el-icon><Search /></el-icon>
-              搜索
-            </el-button>
-            <el-button @click="resetSearch">
-              <el-icon><Refresh /></el-icon>
-              重置
-            </el-button>
-          </el-form-item>
-        </el-form>
+    <el-card class="mb-4" shadow="never">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-4">
+          <span class="text-sm font-bold">卡名称/编码</span>
+          <el-input
+            v-model="searchForm.cardName"
+            placeholder="请输入卡名称或编码"
+            prefix-icon="Search"
+            clearable
+            style="width: 220px"
+            @clear="handleSearch"
+            @keyup.enter="handleSearch"
+          />
+          <el-button type="primary" @click="handleSearch">
+            <el-icon><Search /></el-icon>
+            搜索
+          </el-button>
+          <el-button @click="resetSearch">
+            <el-icon><Refresh /></el-icon>
+            重置
+          </el-button>
+        </div>
+        <!-- 新增套餐卡按钮 -->
+        <el-button v-if="hasAuth('card:package:add')" type="primary" @click="handleAdd">
+          <el-icon><Plus /></el-icon>
+          新增套餐卡
+        </el-button>
       </div>
-      <!-- 新增套餐卡按钮 -->
-      <el-button v-if="hasAuth('card:package:add')" type="primary" class="ml-4" @click="handleAdd">
-        <el-icon><Plus /></el-icon>
-        新增套餐卡
-      </el-button>
-    </div>
+    </el-card>
 
     <!-- 套餐卡数据表格 -->
     <div class="flex-1 min-h-0">
@@ -794,7 +798,7 @@ const dialogWidth = computed(() => {
 
 /** 搜索表单数据 */
 const searchForm = reactive({
-  keyword: ""
+  cardName: ""
 });
 
 /** 分页信息 */
@@ -920,8 +924,8 @@ const getList = async () => {
       page: pagination.current,
       pageSize: pagination.pageSize
     };
-    if (searchForm.keyword) {
-      params.keyword = searchForm.keyword;
+    if (searchForm.cardName) {
+      params.keyword = searchForm.cardName;
     }
     const response = await getPackageCards(params);
     if (response.code === 200) {
@@ -948,7 +952,7 @@ const handleSearch = () => {
 
 /** 重置搜索条件 */
 const resetSearch = () => {
-  searchForm.keyword = "";
+  searchForm.cardName = "";
   pagination.current = 1;
   getList();
 };

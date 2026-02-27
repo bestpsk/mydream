@@ -1,9 +1,34 @@
 <template>
   <div class="role-container">
-    <el-card>
+    <el-card class="main-card">
       <template #header>
         <div class="card-header">
           <span>角色管理</span>
+        </div>
+      </template>
+
+      <!-- 搜索栏 -->
+      <el-card v-if="hasAuth('role:view')" class="mb-4" shadow="never">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center space-x-4">
+            <span class="text-sm font-bold">角色名称</span>
+            <el-input
+              v-model="searchForm.roleName"
+              placeholder="请输入角色名称"
+              clearable
+              style="width: 200px"
+              @clear="handleSearch"
+              @keyup.enter="handleSearch"
+            />
+            <el-button type="primary" @click="handleSearch">
+              <el-icon><Search /></el-icon>
+              搜索
+            </el-button>
+            <el-button @click="resetSearch">
+              <el-icon><Refresh /></el-icon>
+              重置
+            </el-button>
+          </div>
           <el-button
             v-if="hasAuth('role:add')"
             type="primary"
@@ -13,26 +38,10 @@
             新增角色
           </el-button>
         </div>
-      </template>
-
-      <!-- 搜索栏 -->
-      <div v-if="hasAuth('role:view')" class="search-bar">
-        <el-form :inline="true" :model="searchForm" class="mb-4">
-          <el-form-item label="角色名称">
-            <el-input
-              v-model="searchForm.roleName"
-              placeholder="请输入角色名称"
-            />
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="handleSearch">搜索</el-button>
-            <el-button @click="resetSearch">重置</el-button>
-          </el-form-item>
-        </el-form>
-      </div>
+      </el-card>
 
       <!-- 角色列表 -->
-      <div v-if="hasAuth('role:view')">
+      <div v-if="hasAuth('role:view')" class="role-list">
         <el-table v-loading="loading" :data="roleList" style="width: 100%">
           <el-table-column prop="id" label="ID" width="80" />
           <el-table-column prop="roleName" label="角色名称" />
@@ -315,7 +324,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from "vue";
-import { Plus, Edit, Delete, Key } from "@element-plus/icons-vue";
+import { Plus, Edit, Delete, Key, Search, Refresh } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import type { FormInstance, FormRules } from "element-plus";
 import {
@@ -871,13 +880,13 @@ const handleSubmitPermission = () => {
   overflow: hidden;
 }
 
-.el-card {
+.main-card {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-:deep(.el-card__body) {
+.main-card :deep(.el-card__body) {
   padding: 16px;
   height: 100%;
   display: flex;
@@ -891,12 +900,8 @@ const handleSubmitPermission = () => {
   justify-content: space-between;
 }
 
-.search-bar {
-  margin-bottom: 16px;
-}
-
 /* 角色列表区域 */
-:deep(.el-card__body) > div:nth-child(2) {
+.role-list {
   flex: 1;
   min-height: 0;
   display: flex;
@@ -905,12 +910,12 @@ const handleSubmitPermission = () => {
 }
 
 /* 角色列表表格 */
-:deep(.el-card__body) .el-table {
+.role-list .el-table {
   flex: 1;
   min-height: 0;
 }
 
-:deep(.el-card__body) .el-table__body-wrapper {
+.role-list .el-table__body-wrapper {
   overflow: auto;
 }
 

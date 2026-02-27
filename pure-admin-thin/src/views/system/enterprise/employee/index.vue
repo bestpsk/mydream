@@ -1,33 +1,30 @@
 <template>
   <div class="employee-container">
-    <el-card>
+    <el-card class="main-card">
       <template #header>
         <div class="card-header">
           <span>员工管理</span>
-          <el-button
-            v-if="hasAuth('employee:add')"
-            type="primary"
-            @click="handleAdd"
-          >
-            <el-icon><Plus /></el-icon>
-            新增员工
-          </el-button>
         </div>
       </template>
 
       <!-- 搜索栏 -->
-      <div v-if="hasAuth('employee:view')" class="search-bar">
-        <el-form :inline="true" :model="searchForm" class="mb-4">
-          <el-form-item label="员工姓名">
+      <el-card v-if="hasAuth('employee:view')" class="mb-4" shadow="never">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center space-x-4">
+            <span class="text-sm font-bold">员工姓名</span>
             <el-input
               v-model="searchForm.employeeName"
               placeholder="请输入员工姓名"
+              clearable
+              style="width: 200px"
+              @clear="handleSearch"
+              @keyup.enter="handleSearch"
             />
-          </el-form-item>
-          <el-form-item label="所属门店">
+            <span class="text-sm font-bold">所属门店</span>
             <el-select
               v-model="searchForm.storeId"
               placeholder="请选择所属门店"
+              clearable
               style="width: 200px"
             >
               <el-option label="全部" :value="''" />
@@ -39,16 +36,28 @@
               />
               <el-option label="其他" :value="'other'" />
             </el-select>
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="handleSearch">搜索</el-button>
-            <el-button @click="resetSearch">重置</el-button>
-          </el-form-item>
-        </el-form>
-      </div>
+            <el-button type="primary" @click="handleSearch">
+              <el-icon><Search /></el-icon>
+              搜索
+            </el-button>
+            <el-button @click="resetSearch">
+              <el-icon><Refresh /></el-icon>
+              重置
+            </el-button>
+          </div>
+          <el-button
+            v-if="hasAuth('employee:add')"
+            type="primary"
+            @click="handleAdd"
+          >
+            <el-icon><Plus /></el-icon>
+            新增员工
+          </el-button>
+        </div>
+      </el-card>
 
       <!-- 员工列表 -->
-      <div v-if="hasAuth('employee:view')">
+      <div v-if="hasAuth('employee:view')" class="employee-list">
         <el-table v-loading="loading" :data="employeeList" style="width: 100%">
           <el-table-column prop="id" label="ID" width="80" />
           <el-table-column label="员工姓名">
@@ -319,7 +328,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch, computed } from "vue";
-import { Plus, Edit, Delete } from "@element-plus/icons-vue";
+import { Plus, Edit, Delete, Search, Refresh } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import type { FormInstance, FormRules } from "element-plus";
 import {
@@ -874,13 +883,13 @@ const handleSubmit = async () => {
   overflow: hidden;
 }
 
-.el-card {
+.main-card {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-:deep(.el-card__body) {
+.main-card :deep(.el-card__body) {
   padding: 16px;
   height: 100%;
   display: flex;
@@ -894,12 +903,8 @@ const handleSubmit = async () => {
   justify-content: space-between;
 }
 
-.search-bar {
-  margin-bottom: 16px;
-}
-
 /* 员工列表区域 */
-:deep(.el-card__body) > div:nth-child(2) {
+.employee-list {
   flex: 1;
   min-height: 0;
   display: flex;
@@ -908,12 +913,12 @@ const handleSubmit = async () => {
 }
 
 /* 员工列表表格 */
-:deep(.el-card__body) .el-table {
+.employee-list .el-table {
   flex: 1;
   min-height: 0;
 }
 
-:deep(.el-card__body) .el-table__body-wrapper {
+.employee-list .el-table__body-wrapper {
   overflow: auto;
 }
 

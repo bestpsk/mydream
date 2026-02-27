@@ -475,9 +475,16 @@ class CustomerController
     public function coreDepartments(Request $request)
     {
         try {
-            $departments = Department::where('enable_category', 1)
-                ->where('status', 1)
-                ->get();
+            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
+            
+            $query = Department::where('enable_category', 1)
+                ->where('status', 1);
+            
+            if ($currentCompanyId) {
+                $query->where('company_id', $currentCompanyId);
+            }
+            
+            $departments = $query->get();
             
             $formattedDepartments = $departments->map(function($department) {
                 return [

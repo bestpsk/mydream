@@ -21,57 +21,58 @@
           :class="['flex flex-col h-full', { 'full-screen': isFullScreen }]"
         >
           <!-- 搜索栏 -->
-          <el-form
-            :inline="true"
-            :model="searchForm"
-            class="flex flex-wrap gap-2"
-            size="default"
-          >
-            <!-- 部门分段控制器 -->
-            <div class="segmented-container">
-              <el-segmented
-                v-model="activeDepartment"
-                :options="departmentOptions"
-                @change="handleDepartmentChange"
-              />
+          <el-card class="mb-4" shadow="never">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center space-x-4">
+                <!-- 部门分段控制器 -->
+                <div class="segmented-container">
+                  <el-segmented
+                    v-model="activeDepartment"
+                    :options="departmentOptions"
+                    @change="handleDepartmentChange"
+                  />
+                </div>
+                <span class="text-sm font-bold">客户姓名</span>
+                <el-input
+                  v-model="searchForm.customerName"
+                  placeholder="请输入客户姓名"
+                  clearable
+                  style="width: 120px"
+                  @clear="handleSearch"
+                  @keyup.enter="handleSearch"
+                />
+                <span class="text-sm font-bold">手机号码</span>
+                <el-input
+                  v-model="searchForm.phone"
+                  placeholder="请输入手机号码"
+                  clearable
+                  style="width: 120px"
+                  @clear="handleSearch"
+                  @keyup.enter="handleSearch"
+                />
+                <span class="text-sm font-bold">客户等级</span>
+                <el-select
+                  v-model="searchForm.level"
+                  placeholder="请选择客户等级"
+                  clearable
+                  style="width: 100px"
+                >
+                  <el-option label="普通客户" value="普通客户" />
+                  <el-option label="银卡客户" value="银卡客户" />
+                  <el-option label="金卡客户" value="金卡客户" />
+                  <el-option label="钻石客户" value="钻石客户" />
+                </el-select>
+                <el-button type="primary" @click="handleSearch">
+                  <el-icon><Search /></el-icon>
+                  搜索
+                </el-button>
+                <el-button @click="resetSearch">
+                  <el-icon><Refresh /></el-icon>
+                  重置
+                </el-button>
+              </div>
             </div>
-            <el-form-item label="客户姓名" class="ml-4">
-              <el-input
-                v-model="searchForm.customerName"
-                placeholder="请输入客户姓名"
-                style="width: 120px"
-              />
-            </el-form-item>
-            <el-form-item label="手机号码">
-              <el-input
-                v-model="searchForm.phone"
-                placeholder="请输入手机号码"
-                style="width: 120px"
-              />
-            </el-form-item>
-            <el-form-item label="客户等级">
-              <el-select
-                v-model="searchForm.level"
-                placeholder="请选择客户等级"
-                style="width: 100px"
-              >
-                <el-option label="普通客户" value="普通客户" />
-                <el-option label="银卡客户" value="银卡客户" />
-                <el-option label="金卡客户" value="金卡客户" />
-                <el-option label="钻石客户" value="钻石客户" />
-              </el-select>
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" @click="handleSearch">
-                <el-icon><Search /></el-icon>
-                搜索
-              </el-button>
-              <el-button @click="resetSearch">
-                <el-icon><Refresh /></el-icon>
-                重置
-              </el-button>
-            </el-form-item>
-          </el-form>
+          </el-card>
 
           <!-- 客户信息表格 -->
           <div class="flex-1 min-h-0">

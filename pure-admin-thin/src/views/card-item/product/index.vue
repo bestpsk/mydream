@@ -33,34 +33,37 @@
           <div class="tab-content flex flex-col h-full">
             <div v-if="hasAuth('product:product:view')">
               <!-- 搜索栏和新增按钮 -->
-              <div class="mb-4 flex justify-between items-center">
-                <div class="search-bar flex-grow">
-                  <el-form :inline="true" :model="productSearchForm" class="w-full">
-                    <el-form-item label="产品名称">
-                      <el-input v-model="productSearchForm.productName" placeholder="请输入产品名称" />
-                    </el-form-item>
-                    <el-form-item label="所属分类">
-                      <el-select v-model="productSearchForm.categoryId" placeholder="请选择分类" clearable style="width: 200px">
-                        <el-option v-for="category in categoryList" :key="category.id" :label="category.categoryName" :value="category.id" />
-                      </el-select>
-                    </el-form-item>
-                    <el-form-item>
-                      <el-button type="primary" @click="handleProductSearch">
-                        <el-icon><Search /></el-icon>
-                        搜索
-                      </el-button>
-                      <el-button @click="resetProductSearch">
-                        <el-icon><Refresh /></el-icon>
-                        重置
-                      </el-button>
-                    </el-form-item>
-                  </el-form>
+              <el-card class="mb-4" shadow="never">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center space-x-4">
+                    <span class="text-sm font-bold">产品名称</span>
+                    <el-input
+                      v-model="productSearchForm.productName"
+                      placeholder="请输入产品名称"
+                      clearable
+                      style="width: 200px"
+                      @clear="handleProductSearch"
+                      @keyup.enter="handleProductSearch"
+                    />
+                    <span class="text-sm font-bold">所属分类</span>
+                    <el-select v-model="productSearchForm.categoryId" placeholder="请选择分类" clearable style="width: 200px">
+                      <el-option v-for="category in categoryList" :key="category.id" :label="category.categoryName" :value="category.id" />
+                    </el-select>
+                    <el-button type="primary" @click="handleProductSearch">
+                      <el-icon><Search /></el-icon>
+                      搜索
+                    </el-button>
+                    <el-button @click="resetProductSearch">
+                      <el-icon><Refresh /></el-icon>
+                      重置
+                    </el-button>
+                  </div>
+                  <el-button v-if="hasAuth('product:product:add')" type="primary" @click="handleAddProduct">
+                    <el-icon><Plus /></el-icon>
+                    新增产品
+                  </el-button>
                 </div>
-                <el-button v-if="hasAuth('product:product:add')" type="primary" class="ml-4" @click="handleAddProduct">
-                  <el-icon><Plus /></el-icon>
-                  新增产品
-                </el-button>
-              </div>
+              </el-card>
 
               <!-- 产品列表表格 -->
               <div class="flex-1 min-h-0">
@@ -120,23 +123,34 @@
           <div class="tab-content flex flex-col h-full">
             <div v-if="hasAuth('product:category:view')">
               <!-- 搜索栏和新增按钮 -->
-              <div class="mb-4 flex justify-between items-center">
-                <div class="search-bar flex-grow">
-                  <el-form :inline="true" :model="categorySearchForm" class="w-full">
-                    <el-form-item>
-                      <el-segmented v-model="categorySearchForm.departmentId" :options="departmentSegmentedOptions" @change="handleCategorySearch" />
-                    </el-form-item>
-                    <el-form-item label="分类名称">
-                      <el-input v-model="categorySearchForm.categoryName" placeholder="请输入分类名称" />
-                    </el-form-item>
-                    <el-form-item>
-                      <el-button type="primary" @click="handleCategorySearch">搜索</el-button>
-                      <el-button @click="resetCategorySearch">重置</el-button>
-                    </el-form-item>
-                  </el-form>
+              <el-card class="mb-4" shadow="never">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center space-x-4">
+                    <el-segmented v-model="categorySearchForm.departmentId" :options="departmentSegmentedOptions" @change="handleCategorySearch" />
+                    <span class="text-sm font-bold">分类名称</span>
+                    <el-input
+                      v-model="categorySearchForm.categoryName"
+                      placeholder="请输入分类名称"
+                      clearable
+                      style="width: 200px"
+                      @clear="handleCategorySearch"
+                      @keyup.enter="handleCategorySearch"
+                    />
+                    <el-button type="primary" @click="handleCategorySearch">
+                      <el-icon><Search /></el-icon>
+                      搜索
+                    </el-button>
+                    <el-button @click="resetCategorySearch">
+                      <el-icon><Refresh /></el-icon>
+                      重置
+                    </el-button>
+                  </div>
+                  <el-button v-if="hasAuth('product:category:add')" type="primary" @click="handleAddCategory">
+                    <el-icon><Plus /></el-icon>
+                    新增分类
+                  </el-button>
                 </div>
-                <el-button v-if="hasAuth('product:category:add')" type="primary" class="ml-4" @click="handleAddCategory">新增分类</el-button>
-              </div>
+              </el-card>
 
               <!-- 分类列表表格 -->
               <div class="flex-1 min-h-0">

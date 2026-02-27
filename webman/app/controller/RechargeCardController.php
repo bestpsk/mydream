@@ -20,7 +20,7 @@ class RechargeCardController
             $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
             
             // 构建查询
-            $query = DB::table('card_recharge')->where('isDelete', 0);
+            $query = DB::table('card_recharge')->where('is_delete', 0);
             
             // 非超级管理员只能查看自己公司的充值卡
             if (!$isSuper && $currentCompanyId) {
@@ -51,6 +51,7 @@ class RechargeCardController
                     'id' => $card->id,
                     'companyId' => $card->company_id,
                     'cardName' => $card->card_name,
+                    'cardCode' => $card->card_code ?? '',
                     'amount' => $card->amount,
                     'giftAmount' => $card->gift_amount,
                     'projectDiscount' => $card->project_discount,
@@ -96,7 +97,7 @@ class RechargeCardController
             $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
             
             // 构建查询
-            $query = DB::table('card_recharge')->where('id', $id)->where('isDelete', 0);
+            $query = DB::table('card_recharge')->where('id', $id)->where('is_delete', 0);
             
             // 非超级管理员只能查看自己公司的充值卡
             if (!$isSuper && $currentCompanyId) {
@@ -234,6 +235,7 @@ class RechargeCardController
                 'id' => $card->id,
                 'companyId' => $card->company_id,
                 'cardName' => $card->card_name,
+                'cardCode' => $card->card_code ?? '',
                 'amount' => $card->amount,
                 'giftAmount' => $card->gift_amount,
                 'projectDiscount' => $card->project_discount,
@@ -317,6 +319,7 @@ class RechargeCardController
             $dbData = [
                 'company_id' => $data['companyId'] ?? $currentCompanyId,
                 'card_name' => $data['cardName'],
+                'card_code' => $data['cardCode'] ?? '',
                 'amount' => $data['amount'],
                 'gift_amount' => $data['giftAmount'] ?? 0,
                 'project_discount' => $data['projectDiscount'] ?? 10,
@@ -334,7 +337,7 @@ class RechargeCardController
                 'is_expire_invalid' => $data['isExpireInvalid'] ?? 1,
                 'is_project_expire' => $data['isProjectExpire'] ?? 1,
                 'is_prohibit_discount_modify' => $data['isProhibitDiscountModify'] ?? 0,
-                'isDelete' => 0,
+                'is_delete' => 0,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ];
@@ -515,7 +518,7 @@ class RechargeCardController
             $data = $request->post();
             
             // 检查充值卡是否存在
-            $card = DB::table('card_recharge')->where('id', $id)->where('isDelete', 0)->first();
+            $card = DB::table('card_recharge')->where('id', $id)->where('is_delete', 0)->first();
             if (!$card) {
                 return json(['code' => 404, 'message' => '充值卡不存在']);
             }
@@ -545,6 +548,9 @@ class RechargeCardController
             // 只更新提供的字段
             if (isset($data['cardName'])) {
                 $dbData['card_name'] = $data['cardName'];
+            }
+            if (isset($data['cardCode'])) {
+                $dbData['card_code'] = $data['cardCode'];
             }
             if (isset($data['amount'])) {
                 $dbData['amount'] = $data['amount'];
@@ -758,7 +764,7 @@ class RechargeCardController
     {
         try {
             // 检查充值卡是否存在
-            $card = DB::table('card_recharge')->where('id', $id)->where('isDelete', 0)->first();
+            $card = DB::table('card_recharge')->where('id', $id)->where('is_delete', 0)->first();
             if (!$card) {
                 return json(['code' => 404, 'message' => '充值卡不存在']);
             }
@@ -768,7 +774,7 @@ class RechargeCardController
             
             try {
                 // 软删除充值卡
-                DB::table('card_recharge')->where('id', $id)->update(['isDelete' => 1]);
+                DB::table('card_recharge')->where('id', $id)->update(['is_delete' => 1]);
                 
                 // 提交事务
                 DB::commit();

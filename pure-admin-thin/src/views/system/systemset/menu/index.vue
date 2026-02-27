@@ -1,9 +1,34 @@
 <template>
   <div class="menu-container">
-    <el-card class="h-full flex flex-col">
+    <el-card class="main-card h-full flex flex-col">
       <template #header>
         <div class="card-header">
           <span>菜单管理</span>
+        </div>
+      </template>
+
+      <!-- 搜索栏 -->
+      <el-card v-if="hasAuth('menu:view')" class="mb-4" shadow="never">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center space-x-4">
+            <span class="text-sm font-bold">菜单名称</span>
+            <el-input
+              v-model="searchForm.menuName"
+              placeholder="请输入菜单名称"
+              clearable
+              style="width: 200px"
+              @clear="handleSearch"
+              @keyup.enter="handleSearch"
+            />
+            <el-button type="primary" @click="handleSearch">
+              <el-icon><Search /></el-icon>
+              搜索
+            </el-button>
+            <el-button @click="resetSearch">
+              <el-icon><Refresh /></el-icon>
+              重置
+            </el-button>
+          </div>
           <el-button
             v-if="hasAuth('menu:add')"
             type="primary"
@@ -13,32 +38,10 @@
             新增菜单
           </el-button>
         </div>
-      </template>
-
-      <!-- 搜索栏 -->
-      <div v-if="hasAuth('menu:view')" class="search-bar mb-4">
-        <el-form :inline="true" :model="searchForm">
-          <el-form-item label="菜单名称">
-            <el-input
-              v-model="searchForm.menuName"
-              placeholder="请输入菜单名称"
-            />
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="handleSearch">
-              <el-icon><Search /></el-icon>
-              搜索
-            </el-button>
-            <el-button @click="resetSearch">
-              <el-icon><Refresh /></el-icon>
-              重置
-            </el-button>
-          </el-form-item>
-        </el-form>
-      </div>
+      </el-card>
 
       <!-- 菜单列表 -->
-      <div v-if="hasAuth('menu:view')" class="flex-1 min-h-0">
+      <div v-if="hasAuth('menu:view')" class="menu-list flex-1 min-h-0">
         <el-table
           v-loading="loading"
           :data="menuList"
@@ -891,18 +894,43 @@ const handlePermissionStatusChange = async (row: any, newValue?: boolean) => {
   min-height: calc(100vh - 120px);
 }
 
+.main-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-card :deep(.el-card__body) {
+  padding: 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.search-bar {
+/* 菜单列表区域 */
+.menu-list {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-.pagination {
-  display: flex;
-  justify-content: flex-end;
+/* 菜单列表表格 */
+.menu-list .el-table {
+  flex: 1;
+  min-height: 0;
+}
+
+.menu-list .el-table__body-wrapper {
+  overflow: auto;
 }
 
 .dialog-footer {

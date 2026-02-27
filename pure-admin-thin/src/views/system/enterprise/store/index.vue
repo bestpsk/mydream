@@ -8,48 +8,51 @@
           <div class="tab-content">
             <div v-if="hasAuth('store:view')">
               <!-- 新增按钮和搜索栏放在同一行 -->
-              <div class="mb-4 flex justify-between items-center">
-                <!-- 搜索栏 -->
-                <div class="search-bar flex-grow">
-                  <el-form :inline="true" :model="searchForm" class="w-full">
-                    <el-form-item label="门店名称">
-                      <el-input
-                        v-model="searchForm.storeName"
-                        placeholder="请输入门店名称"
-                      />
-                    </el-form-item>
-                    <el-form-item label="门店类型">
-                      <el-select
-                        v-model="searchForm.storeType"
-                        placeholder="请选择门店类型"
-                        style="width: 160px"
-                      >
-                        <el-option label="美容" value="美容" />
-                        <el-option label="美发" value="美发" />
-                        <el-option label="综合" value="综合" />
-                        <el-option label="美容美甲" value="美容美甲" />
-                        <el-option label="养生" value="养生" />
-                      </el-select>
-                    </el-form-item>
-                    <el-form-item>
-                      <el-button type="primary" @click="handleSearch"
-                        >搜索</el-button
-                      >
-                      <el-button @click="resetSearch">重置</el-button>
-                    </el-form-item>
-                  </el-form>
+              <el-card class="mb-4" shadow="never">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center space-x-4">
+                    <span class="text-sm font-bold">门店名称</span>
+                    <el-input
+                      v-model="searchForm.storeName"
+                      placeholder="请输入门店名称"
+                      clearable
+                      style="width: 200px"
+                      @clear="handleSearch"
+                      @keyup.enter="handleSearch"
+                    />
+                    <span class="text-sm font-bold">门店类型</span>
+                    <el-select
+                      v-model="searchForm.storeType"
+                      placeholder="请选择门店类型"
+                      clearable
+                      style="width: 160px"
+                    >
+                      <el-option label="美容" value="美容" />
+                      <el-option label="美发" value="美发" />
+                      <el-option label="综合" value="综合" />
+                      <el-option label="美容美甲" value="美容美甲" />
+                      <el-option label="养生" value="养生" />
+                    </el-select>
+                    <el-button type="primary" @click="handleSearch">
+                      <el-icon><Search /></el-icon>
+                      搜索
+                    </el-button>
+                    <el-button @click="resetSearch">
+                      <el-icon><Refresh /></el-icon>
+                      重置
+                    </el-button>
+                  </div>
+                  <!-- 新增按钮 -->
+                  <el-button
+                    v-if="hasAuth('store:add')"
+                    type="primary"
+                    @click="handleAdd"
+                  >
+                    <el-icon><Plus /></el-icon>
+                    新增门店
+                  </el-button>
                 </div>
-                <!-- 新增按钮 -->
-                <el-button
-                  v-if="hasAuth('store:add')"
-                  type="primary"
-                  class="ml-4"
-                  @click="handleAdd"
-                >
-                  <el-icon><Plus /></el-icon>
-                  新增门店
-                </el-button>
-              </div>
+              </el-card>
 
               <!-- 门店列表 -->
               <el-table
@@ -131,39 +134,38 @@
           <div class="tab-content">
             <div v-if="hasAuth('store:department:view')">
               <!-- 新增按钮和搜索栏放在同一行 -->
-              <div class="mb-4 flex justify-between items-center">
-                <!-- 搜索栏 -->
-                <div class="search-bar flex-grow">
-                  <el-form
-                    :inline="true"
-                    :model="deptSearchForm"
-                    class="w-full"
+              <el-card class="mb-4" shadow="never">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center space-x-4">
+                    <span class="text-sm font-bold">部门名称</span>
+                    <el-input
+                      v-model="deptSearchForm.deptName"
+                      placeholder="请输入部门名称"
+                      clearable
+                      style="width: 200px"
+                      @clear="handleDeptSearch"
+                      @keyup.enter="handleDeptSearch"
+                    />
+                    <el-button type="primary" @click="handleDeptSearch">
+                      <el-icon><Search /></el-icon>
+                      搜索
+                    </el-button>
+                    <el-button @click="resetDeptSearch">
+                      <el-icon><Refresh /></el-icon>
+                      重置
+                    </el-button>
+                  </div>
+                  <!-- 新增按钮 -->
+                  <el-button
+                    v-if="hasAuth('store:department:add')"
+                    type="primary"
+                    @click="handleAddDept"
                   >
-                    <el-form-item label="部门名称">
-                      <el-input
-                        v-model="deptSearchForm.deptName"
-                        placeholder="请输入部门名称"
-                      />
-                    </el-form-item>
-                    <el-form-item>
-                      <el-button type="primary" @click="handleDeptSearch"
-                        >搜索</el-button
-                      >
-                      <el-button @click="resetDeptSearch">重置</el-button>
-                    </el-form-item>
-                  </el-form>
+                    <el-icon><Plus /></el-icon>
+                    新增部门
+                  </el-button>
                 </div>
-                <!-- 新增按钮 -->
-                <el-button
-                  v-if="hasAuth('store:department:add')"
-                  type="primary"
-                  class="ml-4"
-                  @click="handleAddDept"
-                >
-                  <el-icon><Plus /></el-icon>
-                  新增部门
-                </el-button>
-              </div>
+              </el-card>
 
               <!-- 部门列表 -->
               <el-table
@@ -248,54 +250,53 @@
           <div class="tab-content">
             <div v-if="hasAuth('store:position:view')">
               <!-- 新增按钮和搜索栏放在同一行 -->
-              <div class="mb-4 flex justify-between items-center">
-                <!-- 搜索栏 -->
-                <div class="search-bar flex-grow">
-                  <el-form
-                    :inline="true"
-                    :model="positionSearchForm"
-                    class="w-full"
-                  >
-                    <el-form-item label="职位名称">
-                      <el-input
-                        v-model="positionSearchForm.positionName"
-                        placeholder="请输入职位名称"
+              <el-card class="mb-4" shadow="never">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center space-x-4">
+                    <span class="text-sm font-bold">职位名称</span>
+                    <el-input
+                      v-model="positionSearchForm.positionName"
+                      placeholder="请输入职位名称"
+                      clearable
+                      style="width: 200px"
+                      @clear="handlePositionSearch"
+                      @keyup.enter="handlePositionSearch"
+                    />
+                    <span class="text-sm font-bold">所属部门</span>
+                    <el-select
+                      v-model="positionSearchForm.deptId"
+                      placeholder="请选择所属部门"
+                      clearable
+                      style="width: 200px"
+                    >
+                      <el-option label="全部" value="" />
+                      <el-option
+                        v-for="dept in departmentList"
+                        :key="dept.id"
+                        :label="dept.deptName"
+                        :value="dept.id"
                       />
-                    </el-form-item>
-                    <el-form-item label="所属部门">
-                      <el-select
-                        v-model="positionSearchForm.deptId"
-                        placeholder="请选择所属部门"
-                        style="width: 200px"
-                      >
-                        <el-option label="全部" value="" />
-                        <el-option
-                          v-for="dept in departmentList"
-                          :key="dept.id"
-                          :label="dept.deptName"
-                          :value="dept.id"
-                        />
-                      </el-select>
-                    </el-form-item>
-                    <el-form-item>
-                      <el-button type="primary" @click="handlePositionSearch"
-                        >搜索</el-button
-                      >
-                      <el-button @click="resetPositionSearch">重置</el-button>
-                    </el-form-item>
-                  </el-form>
+                    </el-select>
+                    <el-button type="primary" @click="handlePositionSearch">
+                      <el-icon><Search /></el-icon>
+                      搜索
+                    </el-button>
+                    <el-button @click="resetPositionSearch">
+                      <el-icon><Refresh /></el-icon>
+                      重置
+                    </el-button>
+                  </div>
+                  <!-- 新增按钮 -->
+                  <el-button
+                    v-if="hasAuth('store:position:add')"
+                    type="primary"
+                    @click="handleAddPosition"
+                  >
+                    <el-icon><Plus /></el-icon>
+                    新增职位
+                  </el-button>
                 </div>
-                <!-- 新增按钮 -->
-                <el-button
-                  v-if="hasAuth('store:position:add')"
-                  type="primary"
-                  class="ml-4"
-                  @click="handleAddPosition"
-                >
-                  <el-icon><Plus /></el-icon>
-                  新增职位
-                </el-button>
-              </div>
+              </el-card>
 
               <!-- 职位列表 -->
               <el-table
@@ -363,54 +364,53 @@
           <div class="tab-content">
             <div v-if="hasAuth('store:room:view')">
               <!-- 新增按钮和搜索栏放在同一行 -->
-              <div class="mb-4 flex justify-between items-center">
-                <!-- 搜索栏 -->
-                <div class="search-bar flex-grow">
-                  <el-form
-                    :inline="true"
-                    :model="roomSearchForm"
-                    class="w-full"
-                  >
-                    <el-form-item label="门店名称">
-                      <el-select
-                        v-model="roomSearchForm.storeId"
-                        placeholder="请选择门店"
-                        style="width: 200px"
-                      >
-                        <el-option label="全部" value="" />
-                        <el-option
-                          v-for="store in storeList"
-                          :key="store.id"
-                          :label="store.storeName"
-                          :value="store.id"
-                        />
-                      </el-select>
-                    </el-form-item>
-                    <el-form-item label="房间名称">
-                      <el-input
-                        v-model="roomSearchForm.roomName"
-                        placeholder="请输入房间名称"
+              <el-card class="mb-4" shadow="never">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center space-x-4">
+                    <span class="text-sm font-bold">门店名称</span>
+                    <el-select
+                      v-model="roomSearchForm.storeId"
+                      placeholder="请选择门店"
+                      clearable
+                      style="width: 200px"
+                    >
+                      <el-option label="全部" value="" />
+                      <el-option
+                        v-for="store in storeList"
+                        :key="store.id"
+                        :label="store.storeName"
+                        :value="store.id"
                       />
-                    </el-form-item>
-                    <el-form-item>
-                      <el-button type="primary" @click="handleRoomSearch"
-                        >搜索</el-button
-                      >
-                      <el-button @click="resetRoomSearch">重置</el-button>
-                    </el-form-item>
-                  </el-form>
+                    </el-select>
+                    <span class="text-sm font-bold">房间名称</span>
+                    <el-input
+                      v-model="roomSearchForm.roomName"
+                      placeholder="请输入房间名称"
+                      clearable
+                      style="width: 200px"
+                      @clear="handleRoomSearch"
+                      @keyup.enter="handleRoomSearch"
+                    />
+                    <el-button type="primary" @click="handleRoomSearch">
+                      <el-icon><Search /></el-icon>
+                      搜索
+                    </el-button>
+                    <el-button @click="resetRoomSearch">
+                      <el-icon><Refresh /></el-icon>
+                      重置
+                    </el-button>
+                  </div>
+                  <!-- 新增按钮 -->
+                  <el-button
+                    v-if="hasAuth('store:room:add')"
+                    type="primary"
+                    @click="handleAddRoom"
+                  >
+                    <el-icon><Plus /></el-icon>
+                    新增房间
+                  </el-button>
                 </div>
-                <!-- 新增按钮 -->
-                <el-button
-                  v-if="hasAuth('store:room:add')"
-                  type="primary"
-                  class="ml-4"
-                  @click="handleAddRoom"
-                >
-                  <el-icon><Plus /></el-icon>
-                  新增房间
-                </el-button>
-              </div>
+              </el-card>
 
               <!-- 房间列表 -->
               <el-table
@@ -699,7 +699,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from "vue";
-import { Plus, Edit, Delete } from "@element-plus/icons-vue";
+import { Plus, Edit, Delete, Search, Refresh } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import type { FormInstance, FormRules } from "element-plus";
 import {

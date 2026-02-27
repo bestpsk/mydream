@@ -35,52 +35,47 @@
           <div class="tab-content flex flex-col h-full">
             <div v-if="hasAuth('project:project:view')">
               <!-- 搜索栏和操作按钮区域 -->
-              <div class="mb-4 flex justify-between items-center">
-                <!-- 项目搜索表单 -->
-                <div class="search-bar flex-grow">
-                  <el-form
-                    :inline="true"
-                    :model="projectSearchForm"
-                    class="w-full"
+              <el-card class="mb-4" shadow="never">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center space-x-4">
+                    <span class="text-sm font-bold">项目名称</span>
+                    <el-input
+                      v-model="projectSearchForm.projectName"
+                      placeholder="请输入项目名称"
+                      clearable
+                      style="width: 200px"
+                      @clear="handleProjectSearch"
+                      @keyup.enter="handleProjectSearch"
+                    />
+                    <span class="text-sm font-bold">所属品类</span>
+                    <el-cascader
+                      v-model="projectSearchForm.categoryId"
+                      :options="cascaderCategoryData"
+                      placeholder="请选择所属品类"
+                      style="width: 200px"
+                      clearable
+                      @change="handleCategoryCascaderChange"
+                    />
+                    <el-button type="primary" @click="handleProjectSearch">
+                      <el-icon><Search /></el-icon>
+                      搜索
+                    </el-button>
+                    <el-button @click="resetProjectSearch">
+                      <el-icon><Refresh /></el-icon>
+                      重置
+                    </el-button>
+                  </div>
+                  <!-- 新增项目按钮 -->
+                  <el-button
+                    v-if="hasAuth('project:project:add')"
+                    type="primary"
+                    @click="handleAddProject"
                   >
-                    <el-form-item label="项目名称">
-                      <el-input
-                        v-model="projectSearchForm.projectName"
-                        placeholder="请输入项目名称"
-                      />
-                    </el-form-item>
-                    <el-form-item label="所属品类">
-                      <el-cascader
-                        v-model="projectSearchForm.categoryId"
-                        :options="cascaderCategoryData"
-                        placeholder="请选择所属品类"
-                        style="width: 200px"
-                        @change="handleCategoryCascaderChange"
-                      />
-                    </el-form-item>
-                    <el-form-item>
-                      <el-button type="primary" @click="handleProjectSearch">
-                        <el-icon><Search /></el-icon>
-                        搜索
-                      </el-button>
-                      <el-button @click="resetProjectSearch">
-                        <el-icon><Refresh /></el-icon>
-                        重置
-                      </el-button>
-                    </el-form-item>
-                  </el-form>
+                    <el-icon><Plus /></el-icon>
+                    新增项目
+                  </el-button>
                 </div>
-                <!-- 新增项目按钮 -->
-                <el-button
-                  v-if="hasAuth('project:project:add')"
-                  type="primary"
-                  class="ml-4"
-                  @click="handleAddProject"
-                >
-                  <el-icon><Plus /></el-icon>
-                  新增项目
-                </el-button>
-              </div>
+              </el-card>
 
               <!-- 项目数据表格 -->
               <div class="flex-1 min-h-0">
@@ -152,50 +147,43 @@
           <div class="tab-content flex flex-col h-full">
             <div v-if="hasAuth('project:category:view')">
               <!-- 搜索栏和操作按钮区域 -->
-              <div class="mb-4 flex justify-between items-center">
-                <!-- 分类搜索表单 -->
-                <div class="search-bar flex-grow">
-                  <el-form
-                    :inline="true"
-                    :model="categorySearchForm"
-                    class="w-full"
+              <el-card class="mb-4" shadow="never">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center space-x-4">
+                    <el-segmented
+                      v-model="categorySearchForm.departmentId"
+                      :options="departmentSegmentedOptions"
+                      @change="handleCategorySearch"
+                    />
+                    <span class="text-sm font-bold">分类名称</span>
+                    <el-input
+                      v-model="categorySearchForm.categoryName"
+                      placeholder="请输入分类名称"
+                      clearable
+                      style="width: 200px"
+                      @clear="handleCategorySearch"
+                      @keyup.enter="handleCategorySearch"
+                    />
+                    <el-button type="primary" @click="handleCategorySearch">
+                      <el-icon><Search /></el-icon>
+                      搜索
+                    </el-button>
+                    <el-button @click="resetCategorySearch">
+                      <el-icon><Refresh /></el-icon>
+                      重置
+                    </el-button>
+                  </div>
+                  <!-- 新增分类按钮 -->
+                  <el-button
+                    v-if="hasAuth('project:category:add')"
+                    type="primary"
+                    @click="handleAddCategory"
                   >
-                    <el-form-item>
-                      <el-segmented
-                        v-model="categorySearchForm.departmentId"
-                        :options="departmentSegmentedOptions"
-                        @change="handleCategorySearch"
-                      />
-                    </el-form-item>
-                    <el-form-item label="分类名称">
-                      <el-input
-                        v-model="categorySearchForm.categoryName"
-                        placeholder="请输入分类名称"
-                      />
-                    </el-form-item>
-                    <el-form-item>
-                      <el-button type="primary" @click="handleCategorySearch">
-                        <el-icon><Search /></el-icon>
-                        搜索
-                      </el-button>
-                      <el-button @click="resetCategorySearch">
-                        <el-icon><Refresh /></el-icon>
-                        重置
-                      </el-button>
-                    </el-form-item>
-                  </el-form>
+                    <el-icon><Plus /></el-icon>
+                    新增分类
+                  </el-button>
                 </div>
-                <!-- 新增分类按钮 -->
-                <el-button
-                  v-if="hasAuth('project:category:add')"
-                  type="primary"
-                  class="ml-4"
-                  @click="handleAddCategory"
-                >
-                  <el-icon><Plus /></el-icon>
-                  新增分类
-                </el-button>
-              </div>
+              </el-card>
 
               <!-- 分类数据表格 -->
               <div class="flex-1 min-h-0">

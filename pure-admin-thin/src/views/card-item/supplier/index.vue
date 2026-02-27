@@ -22,49 +22,47 @@
   <div class="supplier-container">
     <el-card class="h-full flex flex-col">
       <!-- 搜索栏和操作按钮区域 -->
-      <div class="mb-4 flex justify-between items-center">
-        <!-- 供应商搜索表单 -->
-        <div class="search-bar flex-grow">
-          <el-form
-            :inline="true"
-            :model="searchForm"
-            class="w-full"
+      <el-card class="mb-4" shadow="never">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center space-x-4">
+            <span class="text-sm font-bold">供应商品牌</span>
+            <el-input
+              v-model="searchForm.supplierName"
+              placeholder="请输入供应商品牌"
+              clearable
+              style="width: 200px"
+              @clear="handleSearch"
+              @keyup.enter="handleSearch"
+            />
+            <span class="text-sm font-bold">联系人</span>
+            <el-input
+              v-model="searchForm.contact"
+              placeholder="请输入联系人"
+              clearable
+              style="width: 200px"
+              @clear="handleSearch"
+              @keyup.enter="handleSearch"
+            />
+            <el-button type="primary" @click="handleSearch">
+              <el-icon><Search /></el-icon>
+              搜索
+            </el-button>
+            <el-button @click="resetSearch">
+              <el-icon><Refresh /></el-icon>
+              重置
+            </el-button>
+          </div>
+          <!-- 新增供应商按钮 -->
+          <el-button
+            v-if="hasAuth('project:supplier:add')"
+            type="primary"
+            @click="handleAdd"
           >
-            <el-form-item label="供应商品牌">
-              <el-input
-                v-model="searchForm.supplierName"
-                placeholder="请输入供应商品牌"
-              />
-            </el-form-item>
-            <el-form-item label="联系人">
-              <el-input
-                v-model="searchForm.contact"
-                placeholder="请输入联系人"
-              />
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" @click="handleSearch">
-                <el-icon><Search /></el-icon>
-                搜索
-              </el-button>
-              <el-button @click="resetSearch">
-                <el-icon><Refresh /></el-icon>
-                重置
-              </el-button>
-            </el-form-item>
-          </el-form>
+            <el-icon><Plus /></el-icon>
+            新增供应商
+          </el-button>
         </div>
-        <!-- 新增供应商按钮 -->
-        <el-button
-          v-if="hasAuth('project:supplier:add')"
-          type="primary"
-          class="ml-4"
-          @click="handleAdd"
-        >
-          <el-icon><Plus /></el-icon>
-          新增供应商
-        </el-button>
-      </div>
+      </el-card>
 
       <!-- 供应商数据表格 -->
       <div class="flex-1 min-h-0">
