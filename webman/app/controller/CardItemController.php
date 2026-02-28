@@ -6,34 +6,18 @@ use app\model\Menu;
 use support\Request;
 use support\DB;
 
-class CardItemController
+class CardItemController extends BaseController
 {
-    /**
-     * 项目管理
-     * 获取供应商列表
-     * @param Request $request 请求对象
-     * @return array 供应商列表数据
-     */
     public function getSuppliers(Request $request)
     {
         try {
-            // 检查用户权限
-            $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
-            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
-            
-            // 检查用户权限
-            $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
-            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
-            
-            // 构建查询
             $query = DB::table('card_supplier')->where('isDelete', 0);
             
-            // 非超级管理员只能查看自己公司的供应商
-            if (!$isSuper && $currentCompanyId) {
+            $currentCompanyId = $this->getCompanyId();
+            if ($currentCompanyId) {
                 $query->where('company_id', $currentCompanyId);
             }
             
-            // 应用搜索条件
             $supplierName = $request->get('supplierName');
             $contact = $request->get('contact');
             if ($supplierName) {
@@ -43,7 +27,6 @@ class CardItemController
                 $query->where('contact', 'like', '%' . $contact . '%');
             }
             
-            // 执行查询
             $suppliers = $query->get();
             
             // 转换字段名：数据库字段名 转 camelCase
@@ -374,19 +357,13 @@ class CardItemController
     public function getProjects(Request $request)
     {
         try {
-            // 检查用户权限
-            $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
-            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
-            
-            // 构建查询
             $query = DB::table('card_project')->where('isDelete', 0);
             
-            // 非超级管理员只能查看自己公司的项目
-            if (!$isSuper && $currentCompanyId) {
+            $currentCompanyId = $this->getCompanyId();
+            if ($currentCompanyId) {
                 $query->where('company_id', $currentCompanyId);
             }
             
-            // 应用搜索条件
             $projectName = $request->get('projectName');
             $categoryId = $request->get('categoryId');
             $status = $request->get('status');
@@ -401,7 +378,6 @@ class CardItemController
                 $query->where('status', $status);
             }
             
-            // 执行查询
             $projects = $query->get();
             
             // 获取所有供应商信息
@@ -828,19 +804,13 @@ class CardItemController
     public function getRechargeCards(Request $request)
     {
         try {
-            // 检查用户权限
-            $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
-            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
-            
-            // 构建查询
             $query = DB::table('card_recharge')->where('isDelete', 0);
             
-            // 非超级管理员只能查看自己公司的充值卡
-            if (!$isSuper && $currentCompanyId) {
+            $currentCompanyId = $this->getCompanyId();
+            if ($currentCompanyId) {
                 $query->where('company_id', $currentCompanyId);
             }
             
-            // 应用搜索条件
             $keyword = $request->get('keyword');
             if ($keyword) {
                 $query->where(function($q) use ($keyword) {
@@ -849,7 +819,6 @@ class CardItemController
                 });
             }
             
-            // 执行查询
             $cards = $query->get();
             
             // 转换字段名：数据库字段名 转 camelCase
@@ -991,25 +960,18 @@ class CardItemController
     public function getPackageCards(Request $request)
     {
         try {
-            // 检查用户权限
-            $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
-            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
-            
-            // 构建查询
             $query = DB::table('card_package')->where('isDelete', 0);
             
-            // 非超级管理员只能查看自己公司的套餐卡
-            if (!$isSuper && $currentCompanyId) {
+            $currentCompanyId = $this->getCompanyId();
+            if ($currentCompanyId) {
                 $query->where('company_id', $currentCompanyId);
             }
             
-            // 应用搜索条件
             $cardName = $request->get('cardName');
             if ($cardName) {
                 $query->where('card_name', 'like', '%' . $cardName . '%');
             }
             
-            // 执行查询
             $cards = $query->get();
             
             // 转换字段名：数据库字段名 转 camelCase
@@ -1948,12 +1910,10 @@ class CardItemController
     public function getTimeCards(Request $request)
     {
         try {
-            $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
-            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
-            
             $query = DB::table('card_time')->where('isDelete', 0);
             
-            if (!$isSuper && $currentCompanyId) {
+            $currentCompanyId = $this->getCompanyId();
+            if ($currentCompanyId) {
                 $query->where('company_id', $currentCompanyId);
             }
             
@@ -2652,12 +2612,10 @@ class CardItemController
     public function getProducts(Request $request)
     {
         try {
-            $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
-            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
-            
             $query = DB::table('card_product')->where('isDelete', 0);
             
-            if (!$isSuper && $currentCompanyId) {
+            $currentCompanyId = $this->getCompanyId();
+            if ($currentCompanyId) {
                 $query->where('company_id', $currentCompanyId);
             }
             

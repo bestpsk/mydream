@@ -658,6 +658,7 @@ import {
   toggleTimeCardStatus,
   batchTimeCardStatus
 } from '@/api/timeCard';
+import { useCompanyChange } from "@/composables/useCompanyChange";
 
 interface Props {
   storeList: any[];
@@ -784,6 +785,11 @@ const generateCardCode = () => {
 };
 
 onMounted(() => {
+  getList();
+});
+
+/** 监听公司变化，重新加载数据 */
+useCompanyChange(() => {
   getList();
 });
 

@@ -76,6 +76,14 @@
               <span v-else>{{ scope.row.status ? "启用" : "禁用" }}</span>
             </template>
           </el-table-column>
+          <el-table-column v-if="isSuperAdmin()" label="租户可见" width="100">
+            <template #default="scope">
+              <el-switch
+                v-model="scope.row.isTenantVisible"
+                @change="value => handleTenantVisibleChange(scope.row, value)"
+              />
+            </template>
+          </el-table-column>
           <el-table-column label="操作" width="300">
             <template #default="scope">
               <el-button
@@ -160,6 +168,10 @@
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-switch v-model="form.status" />
+        </el-form-item>
+        <el-form-item v-if="isSuperAdmin()" label="租户可见" prop="isTenantVisible">
+          <el-switch v-model="form.isTenantVisible" />
+          <span class="text-gray-400 text-xs ml-2">关闭后租户将无法看到此菜单</span>
         </el-form-item>
         <el-form-item label="排序" prop="sort">
           <el-input-number
@@ -328,6 +340,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import type { FormInstance, FormRules } from "element-plus";
 import { http } from "@/utils/http";
 import { hasAuth } from "@/router/utils";
+import { isSuperAdmin } from "@/utils/auth";
 
 // 加载状态
 const loading = ref(false);
@@ -363,7 +376,8 @@ const form = reactive({
   icon: "",
   parentId: "0",
   status: 1,
-  sort: 0
+  sort: 0,
+  isTenantVisible: 1
 });
 
 // 表单验证规则
@@ -429,6 +443,7 @@ const transformMenuData = menus => {
       frameSrc: menu.frame_src || "",
       showLink: menu.show_link || 1,
       status: menu.status === 1,
+      isTenantVisible: menu.is_tenant_visible === 1,
       created_at: menu.created_at
     };
 
@@ -523,6 +538,7 @@ const handleAdd = () => {
   form.parentId = "";
   form.status = 1;
   form.sort = 0;
+  form.isTenantVisible = 1;
   dialogVisible.value = true;
 };
 
@@ -549,6 +565,7 @@ const handleEdit = (row: any) => {
   form.parentId = row.parentId.toString();
   form.status = row.status;
   form.sort = row.sort;
+  form.isTenantVisible = row.isTenantVisible;
   dialogVisible.value = true;
 };
 
@@ -588,6 +605,36 @@ const handleStatusChange = async (row: any, newValue?: boolean) => {
     // 如果请求失败，恢复原来的状态
     row.status = !newValue;
     ElMessage.error("状态更新失败");
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 租户可见变更
+const handleTenantVisibleChange = async (row: any, newValue?: boolean) => {
+  if (newValue === undefined) return;
+
+  loading.value = true;
+  try {
+    const response = await http.request(
+      "put",
+      `/api/role-menu/menu/${row.id}`,
+      {
+        data: {
+          is_tenant_visible: newValue ? 1 : 0
+        }
+      }
+    );
+    if (response.code === 200) {
+      ElMessage.success("租户可见状态更新成功");
+    } else {
+      row.isTenantVisible = !newValue;
+      ElMessage.error("租户可见状态更新失败");
+    }
+  } catch (error) {
+    console.error("租户可见状态更新失败:", error);
+    row.isTenantVisible = !newValue;
+    ElMessage.error("租户可见状态更新失败");
   } finally {
     loading.value = false;
   }
@@ -646,7 +693,8 @@ const handleSubmit = async () => {
           parent_id: form.parentId ? parseInt(form.parentId) : 0,
           icon: form.icon || "",
           menu_rank: form.sort || 0,
-          status: form.status ? 1 : 0
+          status: form.status ? 1 : 0,
+          is_tenant_visible: form.isTenantVisible ? 1 : 0
         };
         console.log("提交数据:", submitData);
 

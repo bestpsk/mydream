@@ -8,9 +8,10 @@ import LaySidebarBreadCrumb from "../lay-sidebar/components/SidebarBreadCrumb.vu
 import LaySidebarTopCollapse from "../lay-sidebar/components/SidebarTopCollapse.vue";
 import { LockScreen } from "@/components/LockScreen";
 import CompanySelector from "@/components/CompanySelector/index.vue";
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import { useStoreStore } from "@/store/modules/store";
 import { useUserStoreHook } from "@/store/modules/user";
+import emitter from "@/utils/eventBus";
 
 import LogoutCircleRLine from "~icons/ri/logout-circle-r-line";
 import Setting from "~icons/ri/settings-3-line";
@@ -34,21 +35,23 @@ const {
 const storeStore = useStoreStore();
 const userStore = useUserStoreHook();
 
-// 本地状态，使用门店ID来绑定el-select的值
 const selectedStoreId = ref<number | null>(null);
-const selectedCompanyId = ref<number | null>(userStore.companyId);
+const selectedCompanyId = ref<number | null>(userStore.selectedCompanyId || userStore.companyId);
 
-// 初始化门店数据
 onMounted(() => {
   storeStore.initStores().then(() => {
-    // 初始化完成后，设置默认选中的门店ID
     if (storeStore.currentStore) {
       selectedStoreId.value = storeStore.currentStore.id;
     }
   });
+  
+  emitter.on("company-change", handleCompanyChange);
 });
 
-// 监听storeStore.currentStore的变化，更新本地状态
+onUnmounted(() => {
+  emitter.off("company-change", handleCompanyChange);
+});
+
 watch(
   () => storeStore.currentStore,
   newStore => {
@@ -58,21 +61,36 @@ watch(
   }
 );
 
-// 处理门店选择
+watch(
+  () => userStore.selectedCompanyId,
+  newCompanyId => {
+    if (newCompanyId) {
+      selectedCompanyId.value = newCompanyId;
+    }
+  }
+);
+
 const handleStoreChange = (storeId: number) => {
-  // 根据选中的storeId找到对应的门店对象
   const selectedStore = storeStore.stores.find(store => store.id === storeId);
   if (selectedStore) {
     selectedStoreId.value = storeId;
     storeStore.setCurrentStore(selectedStore);
+    emitter.emit("store-change", storeId);
   }
 };
 
-// 处理公司选择
 const handleCompanyChange = (companyId: number) => {
   selectedCompanyId.value = companyId;
-  // 切换公司后重新加载对应公司的门店列表
-  storeStore.initStores(companyId);
+  
+  storeStore.initStores(companyId).then(() => {
+    if (storeStore.stores.length > 0) {
+      selectedStoreId.value = storeStore.stores[0].id;
+      storeStore.setCurrentStore(storeStore.stores[0]);
+    } else {
+      selectedStoreId.value = null;
+      storeStore.currentStore = null;
+    }
+  });
 };
 </script>
 

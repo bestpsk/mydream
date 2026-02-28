@@ -724,6 +724,7 @@ import {
 import { hasAuth } from "@/router/utils";
 import { userKey, type DataInfo } from "@/utils/auth";
 import { storageLocal } from "@pureadmin/utils";
+import { useCompanyChange } from "@/composables/useCompanyChange";
 
 // 当前激活的标签页
 const activeTab = ref("store");
@@ -915,21 +916,35 @@ const positionRules = reactive<FormRules>({
 
 // 初始化数据
 onMounted(() => {
-  // 只在有对应权限时调用API获取数据
   if (hasAuth("store:view")) {
     getStoreList();
   }
-  // 公司列表用于下拉选择，无论是否有权限都需要获取
   getCompanyList();
-  // 部门列表和职位列表只在有对应权限时获取
   if (hasAuth("store:department:view")) {
     getDepartmentList();
-    getAllDepartments(); // 获取所有部门，不受搜索条件影响
+    getAllDepartments();
   }
   if (hasAuth("store:position:view")) {
     getPositionList();
   }
-  // 房间列表只在有对应权限时获取
+  if (hasAuth("store:room:view")) {
+    getRoomList();
+  }
+});
+
+// 监听公司变化，重新加载数据
+useCompanyChange(() => {
+  getCompanyList();
+  if (hasAuth("store:view")) {
+    getStoreList();
+  }
+  if (hasAuth("store:department:view")) {
+    getDepartmentList();
+    getAllDepartments();
+  }
+  if (hasAuth("store:position:view")) {
+    getPositionList();
+  }
   if (hasAuth("store:room:view")) {
     getRoomList();
   }

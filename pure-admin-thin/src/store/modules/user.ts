@@ -46,6 +46,10 @@ export const useUserStore = defineStore("pure-user", {
     // 是否为超级管理员
     isSuper:
       storageLocal().getItem<DataInfo<number>>(userKey)?.isSuper ?? false,
+    // 超级管理员选中的公司ID（用于切换公司查看数据）
+    selectedCompanyId:
+      storageLocal().getItem<DataInfo<number>>(userKey)?.selectedCompanyId ??
+      storageLocal().getItem<DataInfo<number>>(userKey)?.companyId,
     // 是否勾选了登录页的免登录
     isRemembered: false,
     // 登录页的免登录存储几天，默认7天
@@ -105,6 +109,18 @@ export const useUserStore = defineStore("pure-user", {
     /** 存储是否为超级管理员 */
     SET_IS_SUPER(isSuper?: boolean) {
       this.isSuper = isSuper ?? false;
+    },
+    /** 存储选中的公司ID */
+    SET_SELECTED_COMPANY_ID(companyId?: number) {
+      this.selectedCompanyId = companyId;
+      // 同时更新localStorage中的数据
+      const userInfo = storageLocal().getItem<DataInfo<number>>(userKey);
+      if (userInfo) {
+        storageLocal().setItem(userKey, {
+          ...userInfo,
+          selectedCompanyId: companyId
+        });
+      }
     },
     /** 存储是否勾选了登录页的免登录 */
     SET_ISREMEMBERED(bool: boolean) {
@@ -171,6 +187,7 @@ export const useUserStore = defineStore("pure-user", {
       this.storeId = undefined;
       this.employeeId = undefined;
       this.isSuper = false;
+      this.selectedCompanyId = undefined;
       removeToken();
       // 清除路由缓存
       storageLocal().removeItem("async-routes");

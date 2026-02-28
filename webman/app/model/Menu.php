@@ -23,6 +23,7 @@ class Menu extends Model
         'frame_src',
         'show_link',
         'status',
+        'is_tenant_visible',
         'is_delete'
     ];
     

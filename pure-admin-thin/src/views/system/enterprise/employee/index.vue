@@ -344,6 +344,7 @@ import {
 } from "@/api/enterprise";
 import { hasAuth } from "@/router/utils";
 import { useUserStoreHook } from "@/store/modules/user";
+import { useCompanyChange, useStoreChange } from "@/composables/useCompanyChange";
 
 // 加载状态
 const loading = ref(false);
@@ -529,13 +530,30 @@ onMounted(() => {
   getDeptList();
   getPositionList();
   getRolesList();
-  // 检查是否有查看权限
   if (hasAuth("employee:view")) {
     getEmployeeList();
   }
-  // 确保用户信息已加载
   if (!userStore.companyId) {
     userStore.getUserInfo();
+  }
+});
+
+// 监听公司变化，重新加载数据
+useCompanyChange(() => {
+  getCompanyList();
+  getStoreList();
+  getDeptList();
+  getPositionList();
+  getRolesList();
+  if (hasAuth("employee:view")) {
+    getEmployeeList();
+  }
+});
+
+// 监听门店变化，重新加载员工列表
+useStoreChange(() => {
+  if (hasAuth("employee:view")) {
+    getEmployeeList();
   }
 });
 

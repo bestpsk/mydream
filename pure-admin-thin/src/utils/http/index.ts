@@ -101,11 +101,15 @@ class PureHttp {
                   config.headers["Authorization"] = formatToken(
                     data.accessToken
                   );
-                  resolve(config);
                 }
-              } else {
-                resolve(config);
               }
+              const userStore = useUserStoreHook();
+              if (userStore.isSuper && userStore.selectedCompanyId) {
+                config.headers["X-Company-ID"] = String(
+                  userStore.selectedCompanyId
+                );
+              }
+              resolve(config);
             });
       },
       error => {

@@ -663,6 +663,7 @@ import {
   updatePackageCard,
   deletePackageCard
 } from '@/api/package';
+import { useCompanyChange } from "@/composables/useCompanyChange";
 
 /** 组件Props接口定义 */
 interface Props {
@@ -908,6 +909,11 @@ const generateCardCode = () => {
 
 /** 组件挂载时加载列表数据 */
 onMounted(() => {
+  getList();
+});
+
+/** 监听公司变化，重新加载数据 */
+useCompanyChange(() => {
   getList();
 });
 

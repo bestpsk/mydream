@@ -356,7 +356,7 @@ CREATE TABLE IF NOT EXISTS `card_recharge` (
 -- 正在导出表  mydream.card_recharge 的数据：~21 rows (大约)
 /*!40000 ALTER TABLE `card_recharge` DISABLE KEYS */;
 INSERT INTO `card_recharge` (`id`, `company_id`, `card_name`, `is_delete`, `card_code`, `created_at`, `updated_at`, `amount`, `gift_amount`, `project_discount`, `product_discount`, `consume_rate`, `min_recharge_limit`, `start_time`, `end_time`, `expire_date`, `expire_type`, `description`, `remark`, `status`, `is_modifiable`, `is_limit_once`, `is_expire_invalid`, `is_project_expire`, `is_prohibit_discount_modify`) VALUES
-	(1, 1, '测试充值卡', 0, NULL, '2026-02-08 00:39:22', '2026-02-08 00:39:22', 1000.00, 100.00, 10.00, 10.00, 100, 0.00, NULL, NULL, NULL, 3, '测试充值卡描述', '测试充值卡备注', 0, 1, 0, 1, 1, 0),
+	(1, 1, '测试充值卡', 0, NULL, '2026-02-08 00:39:22', '2026-02-28 17:57:02', 1000.00, 100.00, 10.00, 10.00, 100, 0.00, NULL, NULL, NULL, 3, '测试充值卡描述', '测试充值卡备注', 1, 1, 0, 1, 1, 0),
 	(2, 2, '?????', 1, NULL, '2026-02-08 00:53:34', '2026-02-08 00:53:34', 1000.00, 0.00, 10.00, 10.00, 100, 0.00, NULL, NULL, NULL, 3, NULL, NULL, 0, 1, 0, 1, 1, 0),
 	(3, 2, '?????', 1, NULL, '2026-02-08 00:54:44', '2026-02-08 00:54:44', 1000.00, 0.00, 10.00, 10.00, 100, 0.00, NULL, NULL, NULL, 3, NULL, NULL, 0, 1, 0, 1, 1, 0),
 	(4, 2, '?????', 1, NULL, '2026-02-08 00:55:35', '2026-02-08 00:55:35', 1000.00, 0.00, 10.00, 10.00, 100, 0.00, NULL, NULL, NULL, 3, NULL, NULL, 0, 1, 0, 1, 1, 0),
@@ -441,7 +441,6 @@ CREATE TABLE IF NOT EXISTS `card_recharge_consume_store` (
 -- 正在导出表  mydream.card_recharge_consume_store 的数据：~3 rows (大约)
 /*!40000 ALTER TABLE `card_recharge_consume_store` DISABLE KEYS */;
 INSERT INTO `card_recharge_consume_store` (`id`, `recharge_id`, `store_id`) VALUES
-	(1, 1, 1),
 	(63, 20, 1),
 	(64, 20, 2);
 /*!40000 ALTER TABLE `card_recharge_consume_store` ENABLE KEYS */;
@@ -561,7 +560,6 @@ CREATE TABLE IF NOT EXISTS `card_recharge_sale_store` (
 -- 正在导出表  mydream.card_recharge_sale_store 的数据：~3 rows (大约)
 /*!40000 ALTER TABLE `card_recharge_sale_store` DISABLE KEYS */;
 INSERT INTO `card_recharge_sale_store` (`id`, `recharge_id`, `store_id`) VALUES
-	(1, 1, 2),
 	(64, 20, 1),
 	(65, 20, 2);
 /*!40000 ALTER TABLE `card_recharge_sale_store` ENABLE KEYS */;
@@ -708,6 +706,7 @@ DROP TABLE IF EXISTS `cust_customer`;
 CREATE TABLE IF NOT EXISTS `cust_customer` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `store_id` int(11) NOT NULL COMMENT '所属门店ID',
+  `company_id` int(10) unsigned DEFAULT NULL COMMENT '所属公司ID',
   `department_id` int(11) NOT NULL COMMENT '所属部门ID',
   `member_card` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '会员卡号',
   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '姓名',
@@ -739,25 +738,26 @@ CREATE TABLE IF NOT EXISTS `cust_customer` (
   KEY `store_id` (`store_id`),
   KEY `department_id` (`department_id`),
   KEY `level` (`level`),
-  KEY `register_time` (`register_time`)
+  KEY `register_time` (`register_time`),
+  KEY `idx_company_id` (`company_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='客户信息表';
 
 -- 正在导出表  mydream.cust_customer 的数据：~13 rows (大约)
 /*!40000 ALTER TABLE `cust_customer` DISABLE KEYS */;
-INSERT INTO `cust_customer` (`id`, `store_id`, `department_id`, `member_card`, `name`, `gender`, `phone`, `birthday`, `birthday_type`, `points`, `register_time`, `source`, `avatar`, `archive_number`, `level`, `service_staff_id`, `manager_id`, `last_consume_time`, `last_consume_amount`, `last_deplete_time`, `last_deplete_amount`, `remark`, `status`, `created_at`, `updated_at`, `name_pinyin`) VALUES
-	(1, 1, 2, 'VIP001', '张三', 1, '13800138000', '1990-01-01', 1, 1000, '2026-02-02 15:09:00', '门店推荐', '', 'ST001-DEP001-20260202001', '银卡客户', 1, 1, '2026-02-02 15:09:00', 500.00, '2026-02-02 15:09:00', 200.00, '测试客户', 1, '2026-02-02 15:09:00', '2026-02-05 16:47:28', 'ZS'),
-	(2, 2, 2, 'VIP002', '李四', 2, '13900139000', '1992-02-02', 2, 2000, '2026-02-02 15:09:00', '线上推广', NULL, 'ST001-DEP002-20260202002', '金卡客户', 1, 5, '2026-02-02 15:09:00', 1000.00, '2026-02-02 15:09:00', 500.00, '测试客户2', 1, '2026-02-02 15:09:00', '2026-02-24 12:59:32', 'LS'),
-	(3, 1, 1, 'MC1202602058551', '顺义客户1', 2, '13367376545', '1984-03-18', 1, 374, '2026-02-05 14:25:01', '门店推荐', '', 'AR11202602058870', '银卡客户', 0, 0, NULL, 0.00, NULL, 0.00, '顺义店测试客户1', 1, '2026-02-05 14:25:01', '2026-02-05 16:46:58', ''),
-	(4, 1, 2, 'MC1202602052646', '顺义客户2', 1, '13771814258', '1981-05-22', 2, 120, '2026-02-05 14:25:01', '门店推荐', '', 'AR11202602052033', '金卡客户', 0, 0, NULL, 0.00, NULL, 0.00, '顺义店测试客户2', 1, '2026-02-05 14:25:01', '2026-02-05 16:47:06', ''),
-	(5, 2, 1, 'MC1202602055123', '顺义客户3', 1, '13891905613', '1980-11-01', 1, 591, '2026-02-05 14:25:01', '网络推广', '', 'AR12202602055771', '银卡客户', 1, 5, NULL, 0.00, NULL, 0.00, '顺义店测试客户3', 1, '2026-02-05 14:25:01', '2026-02-12 12:00:19', ''),
-	(6, 2, 1, 'MC1202602059060', '顺义客户4', 1, '13375745115', '1992-09-20', 1, 353, '2026-02-05 14:25:01', '网络推广', '', 'AR12202602056649', '银卡客户', NULL, NULL, NULL, 0.00, NULL, 0.00, '顺义店测试客户4', 1, '2026-02-05 14:25:01', '2026-02-12 11:44:32', ''),
-	(7, 1, 1, 'MC1202602058711', '顺义客户5', 2, '13433010886', '1996-04-14', 2, 416, '2026-02-05 14:25:01', '门店推荐', '', 'AR11202602050868', '普通客户', 4, NULL, NULL, 0.00, NULL, 0.00, '顺义店测试客户55', 1, '2026-02-05 14:25:01', '2026-02-12 12:27:31', ''),
-	(8, 2, 1, 'MC2202602051244', '肇嘉浜客户1', 2, '13529141046', '1999-01-14', 2, 123, '2026-02-05 14:25:01', '门店推荐', '', 'AR21202602050095', '银卡客户', 7, 6, NULL, 0.00, NULL, 0.00, '肇嘉浜店测试客户1', 1, '2026-02-05 14:25:01', '2026-02-06 18:17:25', ''),
-	(9, 2, 1, 'MC2202602050205', '肇嘉浜客户2', 1, '13446696135', '1995-10-07', 2, 249, '2026-02-05 14:25:01', '线下活动', '', 'AR21202602057121', '金卡客户', 7, 6, NULL, 0.00, NULL, 0.00, '肇嘉浜店测试客户2', 1, '2026-02-05 14:25:01', '2026-02-06 18:25:40', ''),
-	(10, 2, 1, 'MC2202602050763', '肇嘉浜客户3', 1, '13170284614', '1996-09-22', 2, 50, '2026-02-05 14:25:01', '其他', '', 'AR21202602055913', '金卡客户', 0, 0, NULL, 0.00, NULL, 0.00, '肇嘉浜店测试客户3', 1, '2026-02-05 14:25:01', '2026-02-05 16:57:06', ''),
-	(11, 2, 2, 'MC2202602059453', '肇嘉浜客户4', 1, '13919932097', '2001-11-16', 1, 399, '2026-02-05 14:25:01', '网络推广', '', 'AR21202602051349', '金卡客户', 1, 5, NULL, 0.00, NULL, 0.00, '肇嘉浜店测试客户4', 1, '2026-02-05 14:25:01', '2026-02-06 18:25:49', ''),
-	(12, 2, 1, 'MC2202602051465', '肇嘉浜客户5', 2, '13070147288', '1986-01-14', 2, 890, '2026-02-05 14:25:01', '线下活动', '', 'AR21202602056956', '金卡客户', 0, 0, NULL, 0.00, NULL, 0.00, '肇嘉浜店测试客户5', 1, '2026-02-05 14:25:01', '2026-02-05 16:57:21', ''),
-	(13, 4, 6, '0001', '测试客户1', 1, '15888888888', NULL, 1, 0, '2026-02-24 03:55:14', NULL, NULL, 'ST004-DEP006-20260224001', '普通客户', 8, NULL, NULL, 0.00, NULL, 0.00, NULL, 1, '2026-02-24 12:00:04', '2026-02-24 12:00:04', '');
+INSERT INTO `cust_customer` (`id`, `store_id`, `company_id`, `department_id`, `member_card`, `name`, `gender`, `phone`, `birthday`, `birthday_type`, `points`, `register_time`, `source`, `avatar`, `archive_number`, `level`, `service_staff_id`, `manager_id`, `last_consume_time`, `last_consume_amount`, `last_deplete_time`, `last_deplete_amount`, `remark`, `status`, `created_at`, `updated_at`, `name_pinyin`) VALUES
+	(1, 1, 2, 2, 'VIP001', '张三', 1, '13800138000', '1990-01-01', 1, 1000, '2026-02-02 15:09:00', '门店推荐', '', 'ST001-DEP001-20260202001', '银卡客户', 1, 1, '2026-02-02 15:09:00', 500.00, '2026-02-02 15:09:00', 200.00, '测试客户', 1, '2026-02-02 15:09:00', '2026-02-05 16:47:28', 'ZS'),
+	(2, 2, 2, 2, 'VIP002', '李四', 2, '13900139000', '1992-02-02', 2, 2000, '2026-02-02 15:09:00', '线上推广', NULL, 'ST001-DEP002-20260202002', '金卡客户', 1, 5, '2026-02-02 15:09:00', 1000.00, '2026-02-02 15:09:00', 500.00, '测试客户2', 1, '2026-02-02 15:09:00', '2026-02-24 12:59:32', 'LS'),
+	(3, 1, 2, 1, 'MC1202602058551', '顺义客户1', 2, '13367376545', '1984-03-18', 1, 374, '2026-02-05 14:25:01', '门店推荐', '', 'AR11202602058870', '银卡客户', 0, 0, NULL, 0.00, NULL, 0.00, '顺义店测试客户1', 1, '2026-02-05 14:25:01', '2026-02-05 16:46:58', ''),
+	(4, 1, 2, 2, 'MC1202602052646', '顺义客户2', 1, '13771814258', '1981-05-22', 2, 120, '2026-02-05 14:25:01', '门店推荐', '', 'AR11202602052033', '金卡客户', 0, 0, NULL, 0.00, NULL, 0.00, '顺义店测试客户2', 1, '2026-02-05 14:25:01', '2026-02-05 16:47:06', ''),
+	(5, 2, 2, 1, 'MC1202602055123', '顺义客户3', 1, '13891905613', '1980-11-01', 1, 591, '2026-02-05 14:25:01', '网络推广', '', 'AR12202602055771', '银卡客户', 1, 5, NULL, 0.00, NULL, 0.00, '顺义店测试客户3', 1, '2026-02-05 14:25:01', '2026-02-12 12:00:19', ''),
+	(6, 2, 2, 1, 'MC1202602059060', '顺义客户4', 1, '13375745115', '1992-09-20', 1, 353, '2026-02-05 14:25:01', '网络推广', '', 'AR12202602056649', '银卡客户', NULL, NULL, NULL, 0.00, NULL, 0.00, '顺义店测试客户4', 1, '2026-02-05 14:25:01', '2026-02-12 11:44:32', ''),
+	(7, 1, 2, 1, 'MC1202602058711', '顺义客户5', 2, '13433010886', '1996-04-14', 2, 416, '2026-02-05 14:25:01', '门店推荐', '', 'AR11202602050868', '普通客户', 4, NULL, NULL, 0.00, NULL, 0.00, '顺义店测试客户55', 1, '2026-02-05 14:25:01', '2026-02-12 12:27:31', ''),
+	(8, 2, 2, 1, 'MC2202602051244', '肇嘉浜客户1', 2, '13529141046', '1999-01-14', 2, 123, '2026-02-05 14:25:01', '门店推荐', '', 'AR21202602050095', '银卡客户', 7, 6, NULL, 0.00, NULL, 0.00, '肇嘉浜店测试客户1', 1, '2026-02-05 14:25:01', '2026-02-06 18:17:25', ''),
+	(9, 2, 2, 1, 'MC2202602050205', '肇嘉浜客户2', 1, '13446696135', '1995-10-07', 2, 249, '2026-02-05 14:25:01', '线下活动', '', 'AR21202602057121', '金卡客户', 7, 6, NULL, 0.00, NULL, 0.00, '肇嘉浜店测试客户2', 1, '2026-02-05 14:25:01', '2026-02-06 18:25:40', ''),
+	(10, 2, 2, 1, 'MC2202602050763', '肇嘉浜客户3', 1, '13170284614', '1996-09-22', 2, 50, '2026-02-05 14:25:01', '其他', '', 'AR21202602055913', '金卡客户', 0, 0, NULL, 0.00, NULL, 0.00, '肇嘉浜店测试客户3', 1, '2026-02-05 14:25:01', '2026-02-05 16:57:06', ''),
+	(11, 2, 2, 2, 'MC2202602059453', '肇嘉浜客户4', 1, '13919932097', '2001-11-16', 1, 399, '2026-02-05 14:25:01', '网络推广', '', 'AR21202602051349', '金卡客户', 1, 5, NULL, 0.00, NULL, 0.00, '肇嘉浜店测试客户4', 1, '2026-02-05 14:25:01', '2026-02-06 18:25:49', ''),
+	(12, 2, 2, 1, 'MC2202602051465', '肇嘉浜客户5', 2, '13070147288', '1986-01-14', 2, 890, '2026-02-05 14:25:01', '线下活动', '', 'AR21202602056956', '金卡客户', 0, 0, NULL, 0.00, NULL, 0.00, '肇嘉浜店测试客户5', 1, '2026-02-05 14:25:01', '2026-02-05 16:57:21', ''),
+	(13, 4, 3, 6, '0001', '测试客户1', 1, '15888888888', NULL, 1, 0, '2026-02-24 03:55:14', NULL, NULL, 'ST004-DEP006-20260224001', '普通客户', 8, NULL, NULL, 0.00, NULL, 0.00, NULL, 1, '2026-02-24 12:00:04', '2026-02-24 12:00:04', '');
 /*!40000 ALTER TABLE `cust_customer` ENABLE KEYS */;
 
 -- 导出  表 mydream.cust_customer_department 结构
@@ -861,6 +861,12 @@ CREATE TABLE IF NOT EXISTS `sys_company` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `isDelete` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除：0-未删除，1-已删除',
+  `start_date` date DEFAULT NULL,
+  `end_date` date DEFAULT NULL,
+  `is_trial` tinyint(1) NOT NULL DEFAULT '0',
+  `trial_days` int(11) NOT NULL DEFAULT '0',
+  `max_stores` int(11) NOT NULL DEFAULT '0',
+  `max_employees` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`company_name`),
   UNIQUE KEY `idx_code` (`code`)
@@ -868,11 +874,31 @@ CREATE TABLE IF NOT EXISTS `sys_company` (
 
 -- 正在导出表  mydream.sys_company 的数据：~3 rows (大约)
 /*!40000 ALTER TABLE `sys_company` DISABLE KEYS */;
-INSERT INTO `sys_company` (`id`, `code`, `company_name`, `boss`, `phone`, `address`, `enterprise_type`, `store_count`, `service_people`, `status`, `created_at`, `updated_at`, `isDelete`) VALUES
-	(1, 'admin', '系统管理公司', '彭彭', '13900139000', '111', '美容', 20, '鹏鹏', 1, '2026-01-30 10:18:41', '2026-01-31 17:58:21', 0),
-	(2, 'fts', '馥田诗', '汪志', '11', '11', '综合', 2, '鹏鹏', 1, '2026-01-30 15:06:47', '2026-01-31 17:58:29', 0),
-	(3, 'csgs1', '测试公司1', '彭世奎', '15888888888', '防守打法鼎折覆餗', '美容', 1, '大幅度', 1, '2026-02-24 09:32:28', '2026-02-24 09:32:28', 0);
+INSERT INTO `sys_company` (`id`, `code`, `company_name`, `boss`, `phone`, `address`, `enterprise_type`, `store_count`, `service_people`, `status`, `created_at`, `updated_at`, `isDelete`, `start_date`, `end_date`, `is_trial`, `trial_days`, `max_stores`, `max_employees`) VALUES
+	(1, 'admin', '系统管理公司', '彭彭', '13900139000', '111', '美容', 20, '鹏鹏', 1, '2026-01-30 10:18:41', '2026-01-31 17:58:21', 0, NULL, NULL, 0, 0, 0, 0),
+	(2, 'fts', '馥田诗', '汪志', '11', '11', '综合', 2, '鹏鹏', 1, '2026-01-30 15:06:47', '2026-01-31 17:58:29', 0, NULL, NULL, 0, 0, 0, 0),
+	(3, 'csgs1', '测试公司1', '彭世奎', '15888888888', '防守打法鼎折覆餗', '美容', 1, '大幅度', 1, '2026-02-24 09:32:28', '2026-02-24 09:32:28', 0, NULL, NULL, 0, 0, 0, 0);
 /*!40000 ALTER TABLE `sys_company` ENABLE KEYS */;
+
+-- 导出  表 mydream.sys_company_config 结构
+DROP TABLE IF EXISTS `sys_company_config`;
+CREATE TABLE IF NOT EXISTS `sys_company_config` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `company_id` int(10) unsigned NOT NULL,
+  `config_key` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '配置键',
+  `config_value` text COLLATE utf8mb4_unicode_ci COMMENT '配置值',
+  `config_type` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'string' COMMENT '配置类型',
+  `description` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '配置描述',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_company_config` (`company_id`,`config_key`),
+  KEY `idx_company_id` (`company_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='公司配置表';
+
+-- 正在导出表  mydream.sys_company_config 的数据：~0 rows (大约)
+/*!40000 ALTER TABLE `sys_company_config` DISABLE KEYS */;
+/*!40000 ALTER TABLE `sys_company_config` ENABLE KEYS */;
 
 -- 导出  表 mydream.sys_department 结构
 DROP TABLE IF EXISTS `sys_department`;
@@ -936,35 +962,36 @@ CREATE TABLE IF NOT EXISTS `sys_menu` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `is_delete` tinyint(4) NOT NULL DEFAULT '0',
+  `is_tenant_visible` tinyint(1) NOT NULL DEFAULT '1' COMMENT '是否对租户可见：1-可见，0-仅超级管理员可见',
   PRIMARY KEY (`id`),
   KEY `parent_id` (`parent_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='菜单表';
 
 -- 正在导出表  mydream.sys_menu 的数据：~22 rows (大约)
 /*!40000 ALTER TABLE `sys_menu` DISABLE KEYS */;
-INSERT INTO `sys_menu` (`id`, `name`, `path`, `component`, `redirect`, `parent_id`, `icon`, `menu_rank`, `is_frame`, `frame_src`, `show_link`, `status`, `created_at`, `updated_at`, `is_delete`) VALUES
-	(1, '企业管理', '/system/enterprise', 'Layout', '/system/enterprise/company', 0, 'ep:chrome-filled', 1, 0, NULL, 1, 1, '2026-01-29 19:24:46', '2026-01-29 19:49:01', 0),
-	(2, '公司管理', '/system/enterprise/company', 'system/enterprise/company/index.vue', NULL, 1, 'el:briefcase', 1, 0, NULL, 1, 1, '2026-01-29 19:24:46', '2026-02-02 19:30:11', 0),
-	(3, '门店管理', '/system/enterprise/store', 'system/enterprise/store/index.vue', NULL, 1, 'ep:shop', 2, 0, NULL, 1, 1, '2026-01-29 19:24:46', '2026-01-29 19:47:29', 0),
-	(4, '部门职位', '/system/enterprise/department-position', 'system/enterprise/department-position/index.vue', NULL, 1, 'ep:stamp', 3, 0, NULL, 1, 0, '2026-01-29 19:24:46', '2026-02-01 21:55:47', 0),
-	(5, '员工管理', '/system/enterprise/employee', 'system/enterprise/employee/index.vue', NULL, 1, 'ep:user-filled', 4, 0, NULL, 1, 1, '2026-01-29 19:24:46', '2026-01-29 19:44:28', 0),
-	(6, '角色管理', '/system/enterprise/role', 'system/enterprise/role/index.vue', NULL, 12, 'ep:lock', 5, 0, NULL, 1, 1, '2026-01-29 19:24:46', '2026-02-02 16:04:48', 0),
-	(7, '菜单管理', '/system/systemset/menu', 'system/systemset/menu/index.vue', NULL, 12, 'ep:histogram', 2, 0, NULL, 1, 1, '2026-01-29 19:24:46', '2026-02-01 01:48:35', 0),
-	(8, '欢迎页', '/welcome', 'welcome/index.vue', NULL, 0, 'HomeFilled', 0, 0, NULL, 1, 0, '2026-01-29 19:24:46', '2026-02-02 19:39:15', 1),
-	(12, '系统设置', '/system/systemset', 'Layout', '/system/systemset/menu', 0, 'ep:tools', 1, 0, NULL, 1, 1, '2026-02-01 01:19:15', '2026-02-02 16:53:23', 0),
-	(13, '客户管理', '/customer', 'Layout', NULL, 0, 'ep:avatar', 0, 0, NULL, 1, 1, '2026-02-02 09:47:02', '2026-02-02 09:47:39', 0),
-	(14, '客户信息', '/customer/info', 'customer/info/index.vue', NULL, 13, 'ep:info-filled', 0, 0, NULL, 1, 1, '2026-02-02 09:49:13', '2026-02-04 00:44:47', 0),
-	(15, '到店管理', '/customer/visit', 'customer/visit/index', NULL, 13, 'ep:checked', 0, 0, NULL, 1, 1, '2026-02-02 09:51:52', '2026-02-04 00:44:50', 0),
-	(16, '消费分析', '/customer/consumption', 'customer/consumption/index.vue', NULL, 13, 'ep:histogram', 0, 0, NULL, 1, 1, '2026-02-02 10:00:21', '2026-02-04 00:44:54', 0),
-	(17, '品项分析', '/customer/item', 'customer/item/index.vue', NULL, 13, 'ep:switch-filled', 0, 0, NULL, 1, 1, '2026-02-02 10:01:53', '2026-02-04 00:44:56', 0),
-	(18, '卡项管理', '/card-item', 'Layout', NULL, 0, 'ep:checked', 5, 0, NULL, 1, 1, '2026-02-03 22:56:09', '2026-02-04 00:53:56', 0),
-	(19, '项目管理', '/card-item/project', 'card-item/project/index.vue', NULL, 18, 'ep:list', 1, 0, NULL, 1, 1, '2026-02-03 22:56:09', '2026-02-04 00:46:58', 0),
-	(20, '主卡管理', '/card-item/card', 'card-item/card/index.vue', '', 18, 'ep:ticket', 2, 0, NULL, 1, 1, '2026-02-03 22:56:09', '2026-02-25 13:09:07', 0),
-	(24, '收银管理', '/cashier', 'Layout', NULL, 0, 'ep:platform', 0, 0, NULL, 1, 1, '2026-02-09 23:21:56', '2026-02-10 00:31:34', 0),
-	(25, '前台收银', '/cashier/front-desk', '/cashier/front-desk/index.vue', NULL, 24, 'ep:shopping-cart-full', 0, 0, NULL, 1, 1, '2026-02-09 23:23:33', '2026-02-10 00:20:53', 0),
-	(26, '预约管理', '/cashier/appointment-management', '/cashier/appointment-management/index.vue', NULL, 24, 'ep:calendar', 0, 0, NULL, 1, 1, '2026-02-11 10:52:57', '2026-02-11 10:54:18', 0),
-	(30, '供应商管理', '/card-item/supplier', 'card-item/supplier/index', NULL, 18, 'ep:goods', 3, 0, NULL, 1, 1, '2026-02-25 19:29:01', '2026-02-25 19:29:01', 0),
-	(31, '产品管理', '/card-item/product', 'card-item/product/index', NULL, 18, 'ep:goods', 4, 0, NULL, 1, 1, '2026-02-25 20:24:27', '2026-02-25 20:24:27', 0);
+INSERT INTO `sys_menu` (`id`, `name`, `path`, `component`, `redirect`, `parent_id`, `icon`, `menu_rank`, `is_frame`, `frame_src`, `show_link`, `status`, `created_at`, `updated_at`, `is_delete`, `is_tenant_visible`) VALUES
+	(1, '企业管理', '/system/enterprise', 'Layout', '/system/enterprise/company', 0, 'ep:chrome-filled', 1, 0, NULL, 1, 1, '2026-01-29 19:24:46', '2026-02-28 18:15:22', 0, 1),
+	(2, '公司管理', '/system/enterprise/company', 'system/enterprise/company/index.vue', NULL, 12, 'el:briefcase', 1, 0, NULL, 1, 1, '2026-01-29 19:24:46', '2026-02-28 18:16:41', 0, 0),
+	(3, '门店管理', '/system/enterprise/store', 'system/enterprise/store/index.vue', NULL, 1, 'ep:shop', 2, 0, NULL, 1, 1, '2026-01-29 19:24:46', '2026-01-29 19:47:29', 0, 1),
+	(4, '部门职位', '/system/enterprise/department-position', 'system/enterprise/department-position/index.vue', NULL, 1, 'ep:stamp', 3, 0, NULL, 1, 0, '2026-01-29 19:24:46', '2026-02-01 21:55:47', 0, 1),
+	(5, '员工管理', '/system/enterprise/employee', 'system/enterprise/employee/index.vue', NULL, 1, 'ep:user-filled', 4, 0, NULL, 1, 1, '2026-01-29 19:24:46', '2026-01-29 19:44:28', 0, 1),
+	(6, '角色管理', '/system/enterprise/role', 'system/enterprise/role/index.vue', NULL, 1, 'ep:lock', 5, 0, NULL, 1, 1, '2026-01-29 19:24:46', '2026-02-28 18:16:30', 0, 1),
+	(7, '菜单管理', '/system/systemset/menu', 'system/systemset/menu/index.vue', NULL, 12, 'ep:histogram', 2, 0, NULL, 1, 1, '2026-01-29 19:24:46', '2026-02-28 11:15:42', 0, 0),
+	(8, '欢迎页', '/welcome', 'welcome/index.vue', NULL, 0, 'HomeFilled', 0, 0, NULL, 1, 0, '2026-01-29 19:24:46', '2026-02-02 19:39:15', 1, 1),
+	(12, '系统设置', '/system/systemset', 'Layout', '/system/systemset/menu', 0, 'ep:tools', 1, 0, NULL, 1, 1, '2026-02-01 01:19:15', '2026-02-28 18:16:02', 0, 1),
+	(13, '客户管理', '/customer', 'Layout', NULL, 0, 'ep:avatar', 0, 0, NULL, 1, 1, '2026-02-02 09:47:02', '2026-02-02 09:47:39', 0, 1),
+	(14, '客户信息', '/customer/info', 'customer/info/index.vue', NULL, 13, 'ep:info-filled', 0, 0, NULL, 1, 1, '2026-02-02 09:49:13', '2026-02-04 00:44:47', 0, 1),
+	(15, '到店管理', '/customer/visit', 'customer/visit/index', NULL, 13, 'ep:checked', 0, 0, NULL, 1, 1, '2026-02-02 09:51:52', '2026-02-04 00:44:50', 0, 1),
+	(16, '消费分析', '/customer/consumption', 'customer/consumption/index.vue', NULL, 13, 'ep:histogram', 0, 0, NULL, 1, 1, '2026-02-02 10:00:21', '2026-02-04 00:44:54', 0, 1),
+	(17, '品项分析', '/customer/item', 'customer/item/index.vue', NULL, 13, 'ep:switch-filled', 0, 0, NULL, 1, 1, '2026-02-02 10:01:53', '2026-02-04 00:44:56', 0, 1),
+	(18, '卡项管理', '/card-item', 'Layout', NULL, 0, 'ep:checked', 5, 0, NULL, 1, 1, '2026-02-03 22:56:09', '2026-02-04 00:53:56', 0, 1),
+	(19, '项目管理', '/card-item/project', 'card-item/project/index.vue', NULL, 18, 'ep:list', 1, 0, NULL, 1, 1, '2026-02-03 22:56:09', '2026-02-04 00:46:58', 0, 1),
+	(20, '主卡管理', '/card-item/card', 'card-item/card/index.vue', '', 18, 'ep:ticket', 2, 0, NULL, 1, 1, '2026-02-03 22:56:09', '2026-02-25 13:09:07', 0, 1),
+	(24, '收银管理', '/cashier', 'Layout', NULL, 0, 'ep:platform', 0, 0, NULL, 1, 1, '2026-02-09 23:21:56', '2026-02-10 00:31:34', 0, 1),
+	(25, '前台收银', '/cashier/front-desk', '/cashier/front-desk/index.vue', NULL, 24, 'ep:shopping-cart-full', 0, 0, NULL, 1, 1, '2026-02-09 23:23:33', '2026-02-10 00:20:53', 0, 1),
+	(26, '预约管理', '/cashier/appointment-management', '/cashier/appointment-management/index.vue', NULL, 24, 'ep:calendar', 0, 0, NULL, 1, 1, '2026-02-11 10:52:57', '2026-02-11 10:54:18', 0, 1),
+	(30, '供应商管理', '/card-item/supplier', 'card-item/supplier/index', NULL, 18, 'ep:goods', 3, 0, NULL, 1, 1, '2026-02-25 19:29:01', '2026-02-25 19:29:01', 0, 1),
+	(31, '产品管理', '/card-item/product', 'card-item/product/index', NULL, 18, 'ep:goods', 4, 0, NULL, 1, 1, '2026-02-25 20:24:27', '2026-02-25 20:24:27', 0, 1);
 /*!40000 ALTER TABLE `sys_menu` ENABLE KEYS */;
 
 -- 导出  表 mydream.sys_permission 结构
@@ -1142,7 +1169,7 @@ CREATE TABLE IF NOT EXISTS `sys_role_menu` (
   `menu_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `role_menu` (`role_id`,`menu_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=76 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色菜单关联表';
+) ENGINE=InnoDB AUTO_INCREMENT=79 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色菜单关联表';
 
 -- 正在导出表  mydream.sys_role_menu 的数据：~41 rows (大约)
 /*!40000 ALTER TABLE `sys_role_menu` DISABLE KEYS */;
@@ -1164,6 +1191,9 @@ INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`) VALUES
 	(65, 1, 20),
 	(68, 1, 24),
 	(69, 1, 25),
+	(78, 1, 26),
+	(76, 1, 30),
+	(77, 1, 31),
 	(9, 2, 1),
 	(10, 2, 2),
 	(11, 2, 3),
@@ -1198,7 +1228,7 @@ CREATE TABLE IF NOT EXISTS `sys_role_permission` (
   `permission_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `role_permission` (`role_id`,`permission_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=311 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色权限关联表';
+) ENGINE=InnoDB AUTO_INCREMENT=327 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色权限关联表';
 
 -- 正在导出表  mydream.sys_role_permission 的数据：~154 rows (大约)
 /*!40000 ALTER TABLE `sys_role_permission` DISABLE KEYS */;
@@ -1272,6 +1302,22 @@ INSERT INTO `sys_role_permission` (`id`, `role_id`, `permission_id`) VALUES
 	(292, 1, 68),
 	(293, 1, 69),
 	(294, 1, 70),
+	(311, 1, 71),
+	(312, 1, 72),
+	(313, 1, 73),
+	(314, 1, 74),
+	(319, 1, 77),
+	(320, 1, 78),
+	(321, 1, 79),
+	(322, 1, 80),
+	(323, 1, 81),
+	(324, 1, 82),
+	(325, 1, 83),
+	(326, 1, 84),
+	(315, 1, 85),
+	(316, 1, 86),
+	(317, 1, 87),
+	(318, 1, 88),
 	(190, 2, 21),
 	(191, 2, 22),
 	(192, 2, 23),
@@ -1376,7 +1422,7 @@ CREATE TABLE IF NOT EXISTS `sys_store` (
   KEY `company_id` (`company_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='门店表';
 
--- 正在导出表  mydream.sys_store 的数据：~0 rows (大约)
+-- 正在导出表  mydream.sys_store 的数据：~4 rows (大约)
 /*!40000 ALTER TABLE `sys_store` DISABLE KEYS */;
 INSERT INTO `sys_store` (`id`, `store_name`, `phone`, `address`, `store_type`, `company_id`, `status`, `created_at`, `updated_at`, `isDelete`) VALUES
 	(1, '顺义店', '021-11111111', '上海市普陀区', '综合', 2, 1, '2026-01-30 18:38:01', '2026-01-30 18:40:26', 0),
@@ -1395,7 +1441,7 @@ CREATE TABLE IF NOT EXISTS `sys_store_department` (
   UNIQUE KEY `store_department` (`store_id`,`department_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='门店部门关联表';
 
--- 正在导出表  mydream.sys_store_department 的数据：~0 rows (大约)
+-- 正在导出表  mydream.sys_store_department 的数据：~6 rows (大约)
 /*!40000 ALTER TABLE `sys_store_department` DISABLE KEYS */;
 INSERT INTO `sys_store_department` (`id`, `store_id`, `department_id`) VALUES
 	(4, 1, 1),
@@ -1422,7 +1468,7 @@ CREATE TABLE IF NOT EXISTS `sys_user` (
   UNIQUE KEY `idx_sys_user_username` (`username`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户表';
 
--- 正在导出表  mydream.sys_user 的数据：~0 rows (大约)
+-- 正在导出表  mydream.sys_user 的数据：~7 rows (大约)
 /*!40000 ALTER TABLE `sys_user` DISABLE KEYS */;
 INSERT INTO `sys_user` (`id`, `username`, `password`, `nickname`, `avatar`, `status`, `created_at`, `updated_at`) VALUES
 	(1, 'admin', '$2y$10$S.T/5Z23QFHR5w47N/go1.XxQVCr.oXHRjTzl5FSpT2PkqYYyGE3u', '', '', 1, '2026-01-29 19:24:46', '2026-01-30 23:20:15'),
@@ -1457,7 +1503,7 @@ CREATE TABLE IF NOT EXISTS `sys_user_employee` (
   KEY `idx_sys_employee_department_id` (`department_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='员工表';
 
--- 正在导出表  mydream.sys_user_employee 的数据：~0 rows (大约)
+-- 正在导出表  mydream.sys_user_employee 的数据：~7 rows (大约)
 /*!40000 ALTER TABLE `sys_user_employee` DISABLE KEYS */;
 INSERT INTO `sys_user_employee` (`id`, `name`, `user_id`, `company_id`, `store_id`, `department_id`, `position_id`, `superior_id`, `status`, `created_at`, `updated_at`, `isDelete`) VALUES
 	(1, 'test', 2, 2, 2, 2, 62, 5, 1, '2026-01-30 18:55:03', '2026-02-06 17:54:24', 0),
@@ -1514,7 +1560,7 @@ CREATE TABLE IF NOT EXISTS `sys_user_role` (
   KEY `idx_sys_user_role_role_id` (`role_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户角色关联表';
 
--- 正在导出表  mydream.sys_user_role 的数据：~0 rows (大约)
+-- 正在导出表  mydream.sys_user_role 的数据：~7 rows (大约)
 /*!40000 ALTER TABLE `sys_user_role` DISABLE KEYS */;
 INSERT INTO `sys_user_role` (`id`, `user_id`, `role_id`) VALUES
 	(21, 1, 1),
@@ -1542,7 +1588,7 @@ CREATE TABLE IF NOT EXISTS `sys_user_store` (
   CONSTRAINT `fk_user_store_user` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=66 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户门店权限表';
 
--- 正在导出表  mydream.sys_user_store 的数据：~0 rows (大约)
+-- 正在导出表  mydream.sys_user_store 的数据：~9 rows (大约)
 /*!40000 ALTER TABLE `sys_user_store` DISABLE KEYS */;
 INSERT INTO `sys_user_store` (`id`, `user_id`, `store_id`) VALUES
 	(18, 1, 3),

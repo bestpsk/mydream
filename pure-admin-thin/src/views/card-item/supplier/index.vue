@@ -207,6 +207,7 @@ import { Plus, Edit, Delete, Search, Refresh, Close, Check } from "@element-plus
 import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
 import { hasAuth } from "@/router/utils";
 import http from "@/utils/http";
+import { useCompanyChange } from "@/composables/useCompanyChange";
 
 // ==================== 状态定义 ====================
 
@@ -268,6 +269,13 @@ const rules = reactive({
  * 根据权限加载供应商列表
  */
 onMounted(() => {
+  if (hasAuth("project:supplier:view")) {
+    getList();
+  }
+});
+
+// 监听公司变化，重新加载数据
+useCompanyChange(() => {
   if (hasAuth("project:supplier:view")) {
     getList();
   }

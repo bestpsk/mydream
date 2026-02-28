@@ -622,6 +622,7 @@ import { http } from "@/utils/http";
 import { hasAuth } from "@/router/utils";
 import { useStoreStore } from "@/store/modules/store";
 import { useDataCacheStoreHook } from "@/store/modules/dataCache";
+import { useCompanyChange, useStoreChange } from "@/composables/useCompanyChange";
 
 // 加载状态
 const loading = ref(false);
@@ -632,11 +633,9 @@ const storeStore = useStoreStore();
 const dataCacheStore = useDataCacheStoreHook();
 
 // 部门分段控制器
-const activeDepartment = ref(0); // 0: 全部, 1: 部门A, 2: 部门B
+const activeDepartment = ref(0); // 0: 全部, 其他为部门ID
 const departmentOptions = ref([
-  { label: "全部", value: 0 },
-  { label: "部门A", value: 1 },
-  { label: "部门B", value: 2 }
+  { label: "全部", value: 0 }
 ]);
 const coreDepartments = ref<any[]>([]);
 const employees = ref<any[]>([]);
@@ -880,52 +879,56 @@ const onActivated = async () => {
   }
 };
 
+// 监听公司变化，重新加载数据
+useCompanyChange(async () => {
+  if (hasAuth("customer:info:view")) {
+    dataCacheStore.clearCache();
+    await getCoreDepartments(true);
+    await getCustomerList();
+  }
+});
+
+// 监听门店变化，重新加载客户列表
+useStoreChange(() => {
+  if (hasAuth("customer:info:view")) {
+    getCustomerList();
+  }
+});
+
 // 获取核心业务部门
 const getCoreDepartments = async (forceRefresh = false) => {
   try {
-    // 检查缓存是否有效，或者是否强制刷新
     if (
       !forceRefresh &&
       !dataCacheStore.isDepartmentsExpired &&
       dataCacheStore.cachedDepartments.length > 0
     ) {
-      // 使用缓存数据
-      coreDepartments.value = dataCacheStore.cachedDepartments.filter(
-        dept => dept.enable_category
-      );
+      coreDepartments.value = dataCacheStore.cachedDepartments;
     } else {
-      // 调用后端API获取核心业务部门
       const response = await http.request(
         "get",
         "/api/customer/core-departments"
       );
       if (response.code === 200) {
-        // 更新缓存
         dataCacheStore.updateDepartments(response.data);
         coreDepartments.value = response.data;
       }
     }
-    // 更新部门选项
     if (coreDepartments.value.length > 0) {
       departmentOptions.value = [{ label: "全部", value: 0 }];
-      coreDepartments.value.forEach((dept: any, index: number) => {
+      coreDepartments.value.forEach((dept: any) => {
         departmentOptions.value.push({
           label: dept.name,
-          value: index + 1
+          value: dept.id
         });
       });
-      // 检查 activeDepartment 是否有效，如果无效则重置为 0
-      if (activeDepartment.value > coreDepartments.value.length) {
-        activeDepartment.value = 0;
-      }
+      activeDepartment.value = 0;
     } else {
-      // 如果没有部门数据，重置为全部
       departmentOptions.value = [{ label: "全部", value: 0 }];
       activeDepartment.value = 0;
     }
   } catch (error) {
     console.error("获取核心业务部门失败:", error);
-    // 发生错误时，重置为全部
     departmentOptions.value = [{ label: "全部", value: 0 }];
     activeDepartment.value = 0;
   }
@@ -963,22 +966,16 @@ const getEmployees = async () => {
 const getCustomerList = async () => {
   loading.value = true;
   try {
-    // 构建请求参数
     const params = {
       page: pagination.current,
       pageSize: pagination.pageSize,
       name: searchForm.customerName || undefined,
       phone: searchForm.phone || undefined,
       level: searchForm.level || undefined,
-      // 不强制传递门店ID，让后端返回所有门店的顾客
-      // storeId: storeStore.currentStore?.id || undefined,
-      departmentId:
-        activeDepartment.value > 0
-          ? coreDepartments.value[activeDepartment.value - 1]?.id
-          : undefined
+      storeId: storeStore.currentStore?.id || undefined,
+      departmentId: activeDepartment.value > 0 ? activeDepartment.value : undefined
     };
 
-    // 调用真实的API接口
     const response = await http.request("get", "/api/customer/list", {
       params
     });

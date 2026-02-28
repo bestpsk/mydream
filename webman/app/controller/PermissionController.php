@@ -25,6 +25,7 @@ class PermissionController
         }
         
         $userId = $GLOBALS['user_id'];
+        $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
         
         $user = User::with('roles.menus')->find($userId);
         if (!$user) {
@@ -35,7 +36,13 @@ class PermissionController
             return $role->menus->pluck('id')->toArray();
         })->unique()->toArray();
         
-        $menus = Menu::whereIn('id', $menuIds)->where('status', 1)->where('is_delete', 0)->get();
+        $query = Menu::whereIn('id', $menuIds)->where('status', 1)->where('is_delete', 0);
+        
+        if (!$isSuper) {
+            $query->where('is_tenant_visible', 1);
+        }
+        
+        $menus = $query->get();
         
         $menus = $this->filterMenusWithDisabledParent($menus);
         

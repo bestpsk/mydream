@@ -48,6 +48,7 @@ export type userType = {
   storeId?: number;
   employeeId?: number;
   isSuper?: boolean;
+  selectedCompanyId?: number;
   isRemembered?: boolean;
   loginDay?: number;
 };

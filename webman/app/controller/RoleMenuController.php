@@ -7,21 +7,13 @@ use app\model\Menu;
 use app\model\Permission;
 use support\Request;
 
-class RoleMenuController
+class RoleMenuController extends BaseController
 {
-    // 角色管理
     public function getRoles(Request $request)
     {
-        // 检查用户权限
-        $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
-        $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
-        
         $query = Role::where('status', 1);
         
-        // 非超级管理员只能看到自己公司的角色
-        if (!$isSuper && $currentCompanyId) {
-            $query->where('company_id', $currentCompanyId);
-        }
+        $query = $this->applyTenantScope($query, 'company_id');
         
         $roles = $query->with('menus', 'permissions')->get();
         return json(['code' => 200, 'message' => '获取角色列表成功', 'data' => $roles]);
@@ -31,12 +23,8 @@ class RoleMenuController
     {
         $data = $request->post();
         
-        // 检查用户权限
-        $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
-        $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
-        
-        // 非超级管理员只能为自己公司添加角色
-        if (!$isSuper && $currentCompanyId) {
+        $currentCompanyId = $this->getCompanyId();
+        if ($currentCompanyId) {
             $data['company_id'] = $currentCompanyId;
         }
         
@@ -80,17 +68,8 @@ class RoleMenuController
             return json(['code' => 404, 'message' => '角色不存在']);
         }
         
-        // 检查用户权限
-        $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
-        $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
-        
-        // 非超级管理员只能更新自己公司的角色
-        if (!$isSuper && $currentCompanyId && $role->company_id != $currentCompanyId) {
-            return json(['code' => 403, 'message' => '权限不足，只能更新自己公司的角色']);
-        }
-        
-        // 非超级管理员只能为自己公司更新角色
-        if (!$isSuper && $currentCompanyId) {
+        $currentCompanyId = $this->getCompanyId();
+        if ($currentCompanyId) {
             $data['company_id'] = $currentCompanyId;
         }
         
@@ -131,15 +110,6 @@ class RoleMenuController
         $role = Role::find($id);
         if (!$role) {
             return json(['code' => 404, 'message' => '角色不存在']);
-        }
-        
-        // 检查用户权限
-        $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
-        $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
-        
-        // 非超级管理员只能删除自己公司的角色
-        if (!$isSuper && $currentCompanyId && $role->company_id != $currentCompanyId) {
-            return json(['code' => 403, 'message' => '权限不足，只能删除自己公司的角色']);
         }
         
         $role->update(['status' => 0]);
@@ -222,9 +192,14 @@ class RoleMenuController
     // 菜单管理
     public function getMenus(Request $request)
     {
-        // 获取所有菜单，包括状态为0的，除非被软删除才隐藏
-        // 注意：如果 Menu 模型使用软删除，应该使用 withTrashed() 方法
-        $menus = Menu::get();
+        $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
+        
+        if ($isSuper) {
+            $menus = Menu::get();
+        } else {
+            $menus = Menu::where('is_tenant_visible', 1)->get();
+        }
+        
         $menuTree = $this->buildMenuTree($menus);
         return json(['code' => 200, 'message' => '获取菜单列表成功', 'data' => $menuTree]);
     }

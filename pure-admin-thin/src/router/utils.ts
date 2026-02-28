@@ -85,9 +85,16 @@ function isOneOfArray(a: Array<string>, b: Array<string>) {
 function filterNoPermissionTree(data: RouteComponent[]) {
   const currentRoles =
     storageLocal().getItem<DataInfo<number>>(userKey)?.roles ?? [];
-  const newTree = cloneDeep(data).filter((v: any) =>
-    isOneOfArray(v.meta?.roles, currentRoles)
-  );
+  const isSuper = storageLocal().getItem<DataInfo<number>>(userKey)?.isSuper ?? false;
+  const newTree = cloneDeep(data).filter((v: any) => {
+    if (!isOneOfArray(v.meta?.roles, currentRoles)) {
+      return false;
+    }
+    if (!isSuper && v.meta?.isTenantVisible === false) {
+      return false;
+    }
+    return true;
+  });
   newTree.forEach(
     (v: any) => v.children && (v.children = filterNoPermissionTree(v.children))
   );

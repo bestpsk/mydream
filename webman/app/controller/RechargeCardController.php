@@ -5,29 +5,18 @@ namespace app\controller;
 use support\Request;
 use support\DB;
 
-class RechargeCardController
+class RechargeCardController extends BaseController
 {
-    /**
-     * 获取充值卡列表
-     * @param Request $request 请求对象
-     * @return array 充值卡列表数据
-     */
     public function getList(Request $request)
     {
         try {
-            // 检查用户权限
-            $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
-            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
-            
-            // 构建查询
             $query = DB::table('card_recharge')->where('is_delete', 0);
             
-            // 非超级管理员只能查看自己公司的充值卡
-            if (!$isSuper && $currentCompanyId) {
+            $currentCompanyId = $this->getCompanyId();
+            if ($currentCompanyId) {
                 $query->where('company_id', $currentCompanyId);
             }
             
-            // 应用搜索条件
             $keyword = $request->get('keyword');
             if ($keyword) {
                 $query->where(function($q) use ($keyword) {
@@ -36,13 +25,6 @@ class RechargeCardController
                 });
             }
             
-            // 移除对不存在的department_id字段的引用
-            // $departmentId = $request->get('departmentId');
-            // if ($departmentId) {
-            //     $query->where('department_id', $departmentId);
-            // }
-            
-            // 执行查询
             $rechargeCards = $query->orderBy('created_at', 'desc')->get();
             
             // 转换字段名：数据库字段名 转 camelCase
@@ -92,19 +74,13 @@ class RechargeCardController
     public function getDetail(Request $request, $id)
     {
         try {
-            // 检查用户权限
-            $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
-            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
-            
-            // 构建查询
             $query = DB::table('card_recharge')->where('id', $id)->where('is_delete', 0);
             
-            // 非超级管理员只能查看自己公司的充值卡
-            if (!$isSuper && $currentCompanyId) {
+            $currentCompanyId = $this->getCompanyId();
+            if ($currentCompanyId) {
                 $query->where('company_id', $currentCompanyId);
             }
             
-            // 执行查询
             $card = $query->first();
             if (!$card) {
                 return json(['code' => 404, 'message' => '充值卡不存在']);
@@ -280,7 +256,6 @@ class RechargeCardController
     public function add(Request $request)
     {
         try {
-            // 验证必要参数
             $data = $request->post();
             
             if (empty($data['cardName'])) {
@@ -292,19 +267,15 @@ class RechargeCardController
                 return json(['code' => 400, 'message' => '金额不能为空']);
             }
             
-            // 获取当前用户所属公司ID
-            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
-            // 对于超级管理员，使用请求中的 companyId 或默认值 1
+            $currentCompanyId = $this->getCompanyId();
             if (!$currentCompanyId) {
                 $currentCompanyId = $data['companyId'] ?? 1;
             }
             
-            // 处理日期时间字段，确保空字符串转换为null
             $startTime = !empty($data['startTime']) ? $data['startTime'] : null;
             $endTime = !empty($data['endTime']) ? $data['endTime'] : null;
             $expireDate = !empty($data['expireDate']) ? $data['expireDate'] : null;
             
-            // 转换ISO 8601格式的日期时间为MySQL支持的格式
             if (!empty($startTime)) {
                 $startTime = $this->convertDateTimeFormat($startTime);
             }
@@ -315,9 +286,8 @@ class RechargeCardController
                 $expireDate = $this->convertDateTimeFormat($expireDate);
             }
             
-            // 构建数据库插入数据
             $dbData = [
-                'company_id' => $data['companyId'] ?? $currentCompanyId,
+                'company_id' => $currentCompanyId,
                 'card_name' => $data['cardName'],
                 'card_code' => $data['cardCode'] ?? '',
                 'amount' => $data['amount'],

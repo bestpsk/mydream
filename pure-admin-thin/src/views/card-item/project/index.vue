@@ -840,6 +840,7 @@ import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
 import { hasAuth } from "@/router/utils";
 import { http } from "@/utils/http";
 import { pinyin } from "pinyin-pro";
+import { useCompanyChange } from "@/composables/useCompanyChange";
 
 // ==================== 状态定义 ====================
 
@@ -1204,6 +1205,21 @@ onMounted(() => {
     getDepartmentList();
   }
   // 获取分店列表
+  getStoreList();
+});
+
+/** 监听公司变化，重新加载数据 */
+useCompanyChange(() => {
+  if (hasAuth("project:project:view")) {
+    getProjectList();
+  }
+  if (hasAuth("project:supplier:view")) {
+    getSupplierList();
+  }
+  if (hasAuth("project:category:view")) {
+    getCategoryList();
+    getDepartmentList();
+  }
   getStoreList();
 });
 

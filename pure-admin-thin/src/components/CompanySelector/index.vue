@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { useUserStoreHook } from "@/store/modules/user";
 import { http } from "@/utils/http";
-import type { FormInstance } from "element-plus";
+import { ElMessage } from "element-plus";
+import emitter from "@/utils/eventBus";
 
 const props = defineProps<{
   modelValue?: number;
@@ -17,17 +18,23 @@ const emit = defineEmits<{
 const userStore = useUserStoreHook();
 const companies = ref<any[]>([]);
 const loading = ref(false);
-const currentCompany = ref(props.modelValue);
 
-// 监听modelValue变化
+const currentCompany = computed({
+  get: () => userStore.selectedCompanyId || userStore.companyId,
+  set: (value: number) => {
+    userStore.SET_SELECTED_COMPANY_ID(value);
+  }
+});
+
 watch(
   () => props.modelValue,
   newValue => {
-    currentCompany.value = newValue;
+    if (newValue) {
+      userStore.SET_SELECTED_COMPANY_ID(newValue);
+    }
   }
 );
 
-// 获取公司列表
 const getCompanies = async () => {
   if (!userStore.isSuper) return;
 
@@ -36,6 +43,10 @@ const getCompanies = async () => {
     const response = await http.request("get", "/api/enterprise/company");
     if (response.code === 200) {
       companies.value = response.data;
+      
+      if (!userStore.selectedCompanyId && userStore.companyId) {
+        userStore.SET_SELECTED_COMPANY_ID(userStore.companyId);
+      }
     }
   } catch (error) {
     console.error("获取公司列表失败:", error);
@@ -44,14 +55,16 @@ const getCompanies = async () => {
   }
 };
 
-// 处理公司选择
 const handleCompanyChange = (companyId: number) => {
-  currentCompany.value = companyId;
+  userStore.SET_SELECTED_COMPANY_ID(companyId);
   emit("update:modelValue", companyId);
   emit("change", companyId);
+  
+  emitter.emit("company-change", companyId);
+  
+  ElMessage.success("已切换公司");
 };
 
-// 组件挂载时获取公司列表
 onMounted(() => {
   if (userStore.isSuper) {
     getCompanies();
@@ -78,5 +91,4 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* 组件样式 */
 </style>

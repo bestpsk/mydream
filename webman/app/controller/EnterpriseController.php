@@ -12,7 +12,7 @@ use app\model\Bedroom;
 use support\Request;
 use support\DB;
 
-class EnterpriseController
+class EnterpriseController extends BaseController
 {
     /**
      * 公司管理
@@ -23,22 +23,17 @@ class EnterpriseController
     public function getCompanies(Request $request)
     {
         try {
-            // 检查用户权限
-            $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
-            $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
+            $isSuper = $this->isSuperAdmin();
+            $currentCompanyId = $this->getCompanyId();
             
-            // 构建查询
             $query = Company::where('isDelete', 0);
             
-            // 普通用户只能看到自己所属的公司
             if (!$isSuper && $currentCompanyId) {
                 $query->where('id', $currentCompanyId);
             }
             
-            // 执行查询
             $companies = $query->get();
             
-            // 转换字段名：数据库字段名 转 camelCase
             $formattedCompanies = $companies->map(function($company) {
                 return [
                     'id' => $company->id,
@@ -53,11 +48,10 @@ class EnterpriseController
                     'createTime' => $company->created_at
                 ];
             });
-            return json(['code' => 200, 'message' => '获取公司列表成功', 'data' => $formattedCompanies]);
+            return $this->success($formattedCompanies, '获取公司列表成功');
         } catch (\Exception $e) {
-            // 记录错误日志
             error_log('Get companies error: ' . $e->getMessage());
-            return json(['code' => 500, 'message' => '获取公司列表失败，请稍后重试']);
+            return $this->error('获取公司列表失败，请稍后重试');
         }
     }
     
@@ -176,21 +170,12 @@ class EnterpriseController
     // 门店管理
     public function getStores(Request $request)
     {
-        $companyId = $request->get('company_id');
         $storeName = $request->get('storeName');
         $storeType = $request->get('storeType');
         $query = Store::where('isDelete', 0);
         
-        // 检查用户权限
-        $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
-        if (!$isSuper && isset($GLOBALS['company_id'])) {
-            // 非超级管理员只能看到自己公司的门店
-            $query->where('company_id', $GLOBALS['company_id']);
-        }
+        $query = $this->applyTenantScope($query, 'company_id');
         
-        if ($companyId) {
-            $query->where('company_id', $companyId);
-        }
         if ($storeName) {
             $query->where('store_name', 'like', '%' . $storeName . '%');
         }
@@ -318,18 +303,11 @@ class EnterpriseController
     // 部门管理
     public function getDepartments(Request $request)
     {
-        $companyId = $request->get('company_id');
         $deptName = $request->get('deptName');
         $query = Department::where('isDelete', 0);
         
-        // 检查用户权限
-        $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
-        if (!$isSuper && isset($GLOBALS['company_id'])) {
-            // 非超级管理员只能看到自己公司的部门
-            $query->where('company_id', $GLOBALS['company_id']);
-        } elseif ($companyId) {
-            $query->where('company_id', $companyId);
-        }
+        $query = $this->applyTenantScope($query, 'company_id');
+        
         if ($deptName) {
             $query->where('dept_name', 'like', '%' . $deptName . '%');
         }
@@ -423,24 +401,15 @@ class EnterpriseController
     public function getPositions(Request $request)
     {
         try {
-            $companyId = $request->get('company_id');
             $positionName = $request->get('positionName');
             $deptId = $request->get('deptId');
             $departmentId = $request->get('department_id');
             $storeId = $request->get('store_id');
             
-            error_log('getPositions request params: companyId=' . $companyId . ', deptId=' . $deptId . ', departmentId=' . $departmentId . ', storeId=' . $storeId);
-            
             $query = Position::where('isDelete', 0);
             
-            // 检查用户权限
-            $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
-            if (!$isSuper && isset($GLOBALS['company_id'])) {
-                // 非超级管理员只能看到自己公司的职位
-                $query->where('company_id', $GLOBALS['company_id']);
-            } elseif ($companyId) {
-                $query->where('company_id', $companyId);
-            }
+            $query = $this->applyTenantScope($query, 'company_id');
+            
             if ($positionName) {
                 $query->where('position_name', 'like', '%' . $positionName . '%');
             }
@@ -643,15 +612,10 @@ class EnterpriseController
         })->filter();
         
         // 应用过滤条件
-        // 默认只显示自己所属公司的数据（非超级管理员）
-        if (!$isSuper && $currentCompanyId) {
+        // 使用当前选中的公司ID进行过滤
+        if ($currentCompanyId) {
             $formattedEmployees = $formattedEmployees->filter(function($employee) use ($currentCompanyId) {
                 return $employee['company_id'] == $currentCompanyId;
-            });
-        } elseif ($companyId) {
-            // 如果指定了公司ID，则按指定的过滤
-            $formattedEmployees = $formattedEmployees->filter(function($employee) use ($companyId) {
-                return $employee['company_id'] == $companyId;
             });
         }
         
@@ -973,30 +937,20 @@ class EnterpriseController
     // 床位管理
     public function getBedrooms(Request $request)
     {
-        $companyId = $request->get('companyId');
         $storeId = $request->get('storeId');
         $roomName = $request->get('roomName');
         $query = Bedroom::query();
         
-        // 检查用户权限
-        $isSuper = isset($GLOBALS['is_super']) && $GLOBALS['is_super'];
-        if (!$isSuper && isset($GLOBALS['company_id'])) {
-            // 非超级管理员只能看到自己公司的床位
-            // 先获取自己公司的所有门店ID
-            $storeIds = Store::where('company_id', $GLOBALS['company_id'])->pluck('id')->toArray();
+        // 通过门店关联进行公司过滤
+        $currentCompanyId = $this->getCompanyId();
+        if ($currentCompanyId) {
+            $storeIds = Store::where('company_id', $currentCompanyId)
+                ->where('isDelete', 0)
+                ->pluck('id')
+                ->toArray();
             if ($storeIds) {
                 $query->whereIn('store_id', $storeIds);
             } else {
-                // 如果没有门店，返回空数组
-                return json(['code' => 200, 'message' => '获取床位列表成功', 'data' => []]);
-            }
-        } elseif ($companyId) {
-            // 如果指定了公司ID，获取该公司的所有门店ID
-            $storeIds = Store::where('company_id', $companyId)->pluck('id')->toArray();
-            if ($storeIds) {
-                $query->whereIn('store_id', $storeIds);
-            } else {
-                // 如果没有门店，返回空数组
                 return json(['code' => 200, 'message' => '获取床位列表成功', 'data' => []]);
             }
         }

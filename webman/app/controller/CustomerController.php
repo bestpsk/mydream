@@ -10,7 +10,7 @@ use app\model\Store;
 use Illuminate\Database\Capsule\Manager as DB;
 use Overtrue\Pinyin\Pinyin;
 
-class CustomerController
+class CustomerController extends BaseController
 {
     /**
      * 获取客户列表
@@ -29,6 +29,8 @@ class CustomerController
             $departmentId = $request->get('departmentId');
             
             $query = Customer::where('status', 1);
+            
+            $query = $this->applyTenantScope($query, 'company_id');
             
             if ($name) {
                 $query->where(function($q) use ($name) {
@@ -50,7 +52,6 @@ class CustomerController
             }
             
             if ($departmentId) {
-                // 不仅根据主表中的department_id字段进行筛选，还要根据关联表中的多个部门进行筛选
                 $query->where(function($q) use ($departmentId) {
                     $q->where('department_id', $departmentId)
                       ->orWhereExists(function($subQuery) use ($departmentId) {
@@ -69,9 +70,7 @@ class CustomerController
                 ->limit($pageSize)
                 ->get();
             
-            // 格式化数据
             $formattedCustomers = $customers->map(function($customer) {
-                // 获取客户的多个部门信息
                 $departmentIds = \app\model\CustomerDepartment::where('customer_id', $customer->id)->pluck('department_id')->toArray();
                 $departmentNames = [];
                 if (!empty($departmentIds)) {
@@ -478,7 +477,8 @@ class CustomerController
             $currentCompanyId = isset($GLOBALS['company_id']) ? $GLOBALS['company_id'] : null;
             
             $query = Department::where('enable_category', 1)
-                ->where('status', 1);
+                ->where('status', 1)
+                ->where('isDelete', 0);
             
             if ($currentCompanyId) {
                 $query->where('company_id', $currentCompanyId);

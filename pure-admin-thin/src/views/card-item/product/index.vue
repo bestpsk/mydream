@@ -68,28 +68,31 @@
               <!-- 产品列表表格 -->
               <div class="flex-1 min-h-0">
                 <el-table v-loading="productLoading" :data="productList" style="width: 100%" class="h-full" :max-height="`calc(100vh - 320px)`">
-                  <el-table-column prop="id" label="ID" width="60" />
-                  <el-table-column prop="productCode" label="编码" width="80" />
-                  <el-table-column prop="productName" label="产品名称" min-width="120" />
-                  <el-table-column label="分类" width="100">
+                  <el-table-column prop="id" label="ID" min-width="60" />
+                  <el-table-column prop="productName" label="产品名称" min-width="150" />
+                  <el-table-column label="部门" min-width="100">
+                    <template #default="scope">
+                      <el-tag size="small">{{ getCategoryDepartment(scope.row.categoryId) || '无' }}</el-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="分类" min-width="100">
                     <template #default="scope">
                       {{ getCategoryName(scope.row.categoryId) }}
                     </template>
                   </el-table-column>
-                  <el-table-column prop="unit" label="单位" width="60" />
-                  <el-table-column prop="specification" label="规格" width="80" />
-                  <el-table-column label="原价" width="80">
+                  <el-table-column prop="unit" label="单位" min-width="60" />
+                  <el-table-column prop="specification" label="规格" min-width="80" />
+                  <el-table-column label="原价" min-width="80">
                     <template #default="scope">{{ scope.row.originalPrice || 0 }}元</template>
                   </el-table-column>
-                  <el-table-column label="售价" width="80">
+                  <el-table-column label="售价" min-width="80">
                     <template #default="scope">{{ scope.row.salePrice || 0 }}元</template>
                   </el-table-column>
-                  <el-table-column label="状态" width="80">
+                  <el-table-column label="状态" min-width="80">
                     <template #default="scope">
                       <el-tag :type="scope.row.status === 1 ? 'success' : 'info'">{{ scope.row.status === 1 ? '上线' : '下线' }}</el-tag>
                     </template>
                   </el-table-column>
-                  <el-table-column prop="createTime" label="创建时间" width="160" />
                   <el-table-column label="操作" width="150" fixed="right">
                     <template #default="scope">
                       <el-button v-if="hasAuth('product:product:edit')" type="primary" size="small" @click="handleEditProduct(scope.row)">编辑</el-button>
@@ -418,6 +421,7 @@ import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
 import { hasAuth } from "@/router/utils";
 import http from "@/utils/http";
 import { pinyin } from "pinyin-pro";
+import { useCompanyChange } from "@/composables/useCompanyChange";
 
 // ==================== 状态定义 ====================
 
@@ -553,6 +557,12 @@ onMounted(() => {
   if (hasAuth("product:category:view")) { getCategoryList(); getDepartmentList(); }
 });
 
+/** 监听公司变化，重新加载数据 */
+useCompanyChange(() => {
+  if (hasAuth("product:product:view")) { getProductList(); getSupplierList(); getStoreList(); getCoreDepartmentList(); }
+  if (hasAuth("product:category:view")) { getCategoryList(); getDepartmentList(); }
+});
+
 // ==================== 工具方法 ====================
 
 /** 根据产品名称自动生成产品编码（取汉字拼音首字母） */
@@ -637,6 +647,8 @@ const getStoreList = async () => {
 
 /** 根据分类ID获取分类名称 */
 const getCategoryName = (categoryId: number) => { const category = categoryList.value.find((c: any) => c.id === categoryId); return category ? category.categoryName : ""; };
+/** 根据分类ID获取所属部门 */
+const getCategoryDepartment = (categoryId: number) => { const category = categoryList.value.find((c: any) => c.id === categoryId); if (category && category.departmentId) { return getDepartmentName(category.departmentId); } return ""; };
 /** 根据部门ID获取部门名称 */
 const getDepartmentName = (departmentId: number) => { const dept = departmentList.value.find((d: any) => d.id === departmentId); return dept ? dept.deptName : ""; };
 

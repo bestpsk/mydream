@@ -91,6 +91,7 @@ import { ref, onMounted } from "vue";
 import { hasAuth } from "@/router/utils";
 import { useUserStoreHook } from "@/store/modules/user";
 import { useDataCacheStoreHook } from "@/store/modules/dataCache";
+import { useCompanyChange } from "@/composables/useCompanyChange";
 import http from '@/utils/http';
 import RechargeCard from './RechargeCard.vue';
 import PackageCard from './PackageCard.vue';
@@ -124,13 +125,20 @@ const productList = ref<any[]>([]);
 
 // ==================== 生命周期 ====================
 
-/**
- * 组件挂载时初始化数据
- * 根据权限加载对应的数据列表
- */
 onMounted(() => {
   companyId.value = userStore.companyId || 0;
   
+  if (hasAuth("card:recharge:view") || hasAuth("card:package:view")) {
+    getDepartments();
+    getStores();
+    getProjects();
+    getProducts();
+  }
+});
+
+// 监听公司变化，重新加载数据
+useCompanyChange(() => {
+  companyId.value = userStore.companyId || 0;
   if (hasAuth("card:recharge:view") || hasAuth("card:package:view")) {
     getDepartments();
     getStores();

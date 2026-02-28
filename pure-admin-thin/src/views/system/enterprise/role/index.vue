@@ -337,6 +337,7 @@ import { http } from "@/utils/http";
 import { hasAuth } from "@/router/utils";
 import { isSuperAdmin } from "@/utils/auth";
 import { useUserStoreHook } from "@/store/modules/user";
+import { useCompanyChange } from "@/composables/useCompanyChange";
 
 // 加载状态
 const loading = ref(false);
@@ -458,13 +459,19 @@ const getCompanyList = () => {
 
 // 初始化数据
 onMounted(() => {
-  // 检查是否有查看权限
   if (hasAuth("role:view")) {
     getRoleList();
   }
-  // 获取公司列表
   getCompanyList();
-  // 获取菜单树数据
+  fetchMenuTree();
+});
+
+// 监听公司变化，重新加载数据
+useCompanyChange(() => {
+  getCompanyList();
+  if (hasAuth("role:view")) {
+    getRoleList();
+  }
   fetchMenuTree();
 });
 

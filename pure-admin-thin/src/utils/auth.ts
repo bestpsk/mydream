@@ -31,6 +31,8 @@ export interface DataInfo<T> {
   employeeId?: number;
   /** 是否为超级管理员 */
   isSuper?: boolean;
+  /** 超级管理员选中的公司ID */
+  selectedCompanyId?: number;
 }
 
 export const userKey = "user-info";
@@ -91,7 +93,8 @@ export function setToken(data: DataInfo<Date>) {
     companyName,
     storeId,
     employeeId,
-    isSuper
+    isSuper,
+    selectedCompanyId
   }) {
     useUserStoreHook().SET_AVATAR(avatar);
     useUserStoreHook().SET_USERNAME(username);
@@ -106,6 +109,9 @@ export function setToken(data: DataInfo<Date>) {
     useUserStoreHook().SET_STORE_ID(storeId);
     useUserStoreHook().SET_EMPLOYEE_ID(employeeId);
     useUserStoreHook().SET_IS_SUPER(isSuper);
+    if (selectedCompanyId !== undefined) {
+      useUserStoreHook().SET_SELECTED_COMPANY_ID(selectedCompanyId);
+    }
     storageLocal().setItem(userKey, {
       refreshToken,
       expires,
@@ -119,7 +125,8 @@ export function setToken(data: DataInfo<Date>) {
       companyName,
       storeId,
       employeeId,
-      isSuper
+      isSuper,
+      selectedCompanyId
     });
   }
 
@@ -136,7 +143,8 @@ export function setToken(data: DataInfo<Date>) {
       companyName: data?.companyName,
       storeId: data?.storeId,
       employeeId: data?.employeeId,
-      isSuper: data?.isSuper
+      isSuper: data?.isSuper,
+      selectedCompanyId: data?.selectedCompanyId ?? data?.companyId
     });
   } else {
     const avatar =
@@ -159,6 +167,9 @@ export function setToken(data: DataInfo<Date>) {
     const employeeId =
       storageLocal().getItem<DataInfo<number>>(userKey)?.employeeId;
     const isSuper = storageLocal().getItem<DataInfo<number>>(userKey)?.isSuper;
+    const selectedCompanyId =
+      storageLocal().getItem<DataInfo<number>>(userKey)?.selectedCompanyId ??
+      companyId;
     setUserKey({
       avatar,
       username,
@@ -170,7 +181,8 @@ export function setToken(data: DataInfo<Date>) {
       companyName,
       storeId,
       employeeId,
-      isSuper
+      isSuper,
+      selectedCompanyId
     });
   }
 }
